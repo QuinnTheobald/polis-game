@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polis - Game Rules</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: #2980b9;
+            margin-top: 30px;
+            border-left: 4px solid #3498db;
+            padding-left: 10px;
+        }
+
+        h3 {
+            color: #34495e;
+            margin-top: 20px;
+        }
+
+        .board {
+            font-family: monospace;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+
+        .board-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 40px);
+            gap: 2px;
+            margin: 15px auto;
+            width: fit-content;
+        }
+
+        .cell {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            background: #f5f5f5;
+        }
+
+        .cell.light {
+            background: #fff;
+        }
+
+        .cell.dark {
+            background: #e8e8e8;
+        }
+
+        .red {
+            color: #e74c3c;
+        }
+
+        .blue {
+            color: #3498db;
+        }
+
+        .highlight {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            margin: 15px 0;
+        }
+
+        .example {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .rule-box {
+            background: #f0f7ff;
+            border: 2px solid #3498db;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        ul {
+            line-height: 1.8;
+        }
+
+        .grid-small {
+            display: grid;
+            grid-template-columns: repeat(4, 50px);
+            gap: 2px;
+            margin: 10px auto;
+            width: fit-content;
+        }
+
+        .cell-small {
+            width: 50px;
+            height: 50px;
+            border: 1px solid #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .arrow {
+            color: #f39c12;
+            font-weight: bold;
+        }
+
+        .strategy-tip {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 10px 15px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>POLIS</h1>
+
+    <div class="rule-box">
+        <h3 style="margin-top: 0;">Goal of the Game</h3>
+        <p><strong>Race your chariot to the opponent's side of the board to win!</strong></p>
+    </div>
+
+    <h2>Setup</h2>
+    <p>Polis is played on an 8×8 board. Each player controls:</p>
+    <ul>
+        <li><strong>15 Dogs</strong> - Your main pieces</li>
+        <li><strong>1 Chariot</strong> - Your key piece that can win the game</li>
+    </ul>
+
+    <div class="board">
+        <strong>Starting Position:</strong>
+        <div class="board-grid">
+            <div class="cell dark"><span class="blue">BC</span></div>
+            <div class="cell light"><span class="blue">BD</span></div>
+            <div class="cell dark"><span class="blue">BD</span></div>
+            <div class="cell light"><span class="blue">BD</span></div>
+            <div class="cell dark"><span class="blue">BD</span></div>
+            <div class="cell light"><span class="blue">BD</span></div>
+            <div class="cell dark"><span class="blue">BD</span></div>
+            <div class="cell light"><span class="blue">BD</span></div>
+
+            <div class="cell light"><span class="blue">BD</span></div>
+            <div class="cell dark"><span class="blue">BD</span></div>
+            <div class="cell light"><span class="blue">BD</span></div>
+            <div class="cell dark"><span class="blue">BD</span></div>
+            <div class="cell light"><span class="blue">BD</span></div>
+            <div class="cell dark"><span class="blue">BD</span></div>
+            <div class="cell light"><span class="blue">BD</span></div>
+            <div class="cell dark"><span class="blue">BD</span></div>
+
+            <div class="cell dark"></div>
+            <div class="cell light"></div>
+            <div class="cell dark"></div>
+            <div class="cell light"></div>
+            <div class="cell dark"></div>
+            <div class="cell light"></div>
+            <div class="cell dark"></div>
+            <div class="cell light"></div>
+
+            <div class="cell light"></div>
+            <div class="cell dark"></div>
+            <div class="cell light"></div>
+            <div class="cell dark"></div>
+            <div class="cell light"></div>
+            <div class="cell dark"></div>
+            <div class="cell light"></div>
+            <div class="cell dark"></div>
+
+            <div class="cell dark"></div>
+            <div class="cell light"></div>
+            <div class="cell dark"></div>
+            <div class="cell light"></div>
+            <div class="cell dark"></div>
+            <div class="cell light"></div>
+            <div class="cell dark"></div>
+            <div class="cell light"></div>
+
+            <div class="cell light"></div>
+            <div class="cell dark"></div>
+            <div class="cell light"></div>
+            <div class="cell dark"></div>
+            <div class="cell light"></div>
+            <div class="cell dark"></div>
+            <div class="cell light"></div>
+            <div class="cell dark"></div>
+
+            <div class="cell dark"><span class="red">RD</span></div>
+            <div class="cell light"><span class="red">RD</span></div>
+            <div class="cell dark"><span class="red">RD</span></div>
+            <div class="cell light"><span class="red">RD</span></div>
+            <div class="cell dark"><span class="red">RD</span></div>
+            <div class="cell light"><span class="red">RD</span></div>
+            <div class="cell dark"><span class="red">RD</span></div>
+            <div class="cell light"><span class="red">RD</span></div>
+
+            <div class="cell light"><span class="red">RD</span></div>
+            <div class="cell dark"><span class="red">RD</span></div>
+            <div class="cell light"><span class="red">RD</span></div>
+            <div class="cell dark"><span class="red">RD</span></div>
+            <div class="cell light"><span class="red">RD</span></div>
+            <div class="cell dark"><span class="red">RD</span></div>
+            <div class="cell light"><span class="red">RD</span></div>
+            <div class="cell dark"><span class="red">RC</span></div>
+        </div>
+        <p style="text-align: center; margin-top: 10px;"><span class="blue">BC/BD = Blue Chariot/Dog</span> | <span
+                class="red">RC/RD = Red Chariot/Dog</span></p>
+    </div>
+
+    <p>The chariots start in opposite corners. Blue's chariot is in the top-left; Red's is in the bottom-right.</p>
+
+    <h2>How to Win</h2>
+    <div class="highlight">
+        <p><strong>Get your chariot to the opponent's back row</strong> (the row where their pieces started). The game
+            ends immediately when a chariot reaches the final rank.</p>
+    </div>
+
+    <h2>Taking Your Turn</h2>
+    <p>Players alternate turns. On your turn, you <strong>must</strong> move one piece. You cannot skip your turn.</p>
+
+    <div class="rule-box">
+        <h3 style="margin-top: 0;">Movement</h3>
+        <p>All pieces move <strong>one square in any direction</strong>:</p>
+        <ul style="margin-bottom: 0;">
+            <li>Up, Down, Left, Right</li>
+            <li>Diagonal (up-left, up-right, down-left, down-right)</li>
+        </ul>
+    </div>
+
+    <h2>The Hopping Mechanic</h2>
+    <p>This is the core mechanic of Polis! After you move a piece, <strong>all adjacent pieces hop to the opposite
+            side</strong> of the piece you just moved.</p>
+
+    <div class="example">
+        <strong>Example:</strong>
+        <div class="grid-small">
+            <div class="cell-small"><span class="blue">BD</span></div>
+            <div class="cell-small"><span class="blue">BD</span></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"><span class="blue">BD</span></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"><span class="red">RD</span></div>
+            <div class="cell-small"></div>
+        </div>
+        <p style="text-align: center;"><span class="arrow">↓</span> Blue moves top-left dog to center <span
+                class="arrow">↓</span></p>
+        <div class="grid-small">
+            <div class="cell-small"><span class="red">RD</span></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"><span class="blue">BD</span></div>
+            <div class="cell-small"><span class="blue">BD</span></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"><span class="blue">BD</span></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"></div>
+        </div>
+        <p><strong>What happened:</strong></p>
+        <ul>
+            <li>Top-center Blue dog hopped down</li>
+            <li>Middle-left Blue dog hopped right</li>
+            <li>Bottom-right Red dog hopped to top-left</li>
+        </ul>
+    </div>
+
+    <h3>When Pieces DON'T Hop</h3>
+    <p>There are important exceptions to the hopping rule:</p>
+
+    <div class="rule-box">
+        <h4>Exception 1: Blocked Destination</h4>
+        <p>A piece won't hop if the target square is <strong>occupied</strong> or <strong>off the board</strong>. The
+            piece stays in place instead.</p>
+    </div>
+
+    <div class="rule-box">
+        <h4>Exception 2: Defended Enemy Pieces</h4>
+        <p>An enemy piece won't hop if there's another enemy piece on the opposite side <strong>along the same
+                axis</strong>.</p>
+
+        <div class="example">
+            <p><strong>Defended (piece stays):</strong></p>
+            <div class="grid-small" style="grid-template-columns: repeat(3, 50px);">
+                <div class="cell-small"><span class="red">RD</span></div>
+                <div class="cell-small"><span class="red">RD</span></div>
+                <div class="cell-small"><span class="blue">BD</span> <span class="arrow">←</span></div>
+            </div>
+            <p>The middle Red dog is anchored by the left Red dog, so it won't hop.</p>
+
+            <p style="margin-top: 15px;"><strong>Not defended (piece hops):</strong></p>
+            <div class="grid-small" style="grid-template-columns: repeat(3, 50px);">
+                <div class="cell-small"><span class="red">RD</span></div>
+                <div class="cell-small"></div>
+                <div class="cell-small"></div>
+                <div class="cell-small"></div>
+                <div class="cell-small"><span class="red">RD</span></div>
+                <div class="cell-small"><span class="blue">BD</span> <span class="arrow">←</span></div>
+            </div>
+            <p>The Red dogs aren't on the same axis, so the bottom Red dog hops right.</p>
+        </div>
+    </div>
+
+    <div class="rule-box">
+        <h4>Exception 3: Stunned Chariots</h4>
+        <p>Stunned chariots don't hop (see Chariots section below).</p>
+    </div>
+
+    <h2>Capturing Pieces</h2>
+    <p>After all hops are resolved, check for captures:</p>
+
+    <div class="highlight">
+        <p><strong>A dog is captured if it's surrounded by two enemy pieces on opposite sides along the same
+                axis</strong> (horizontal, vertical, or diagonal).</p>
+    </div>
+
+    <div class="example">
+        <p><strong>Safe (not captured):</strong></p>
+        <div class="grid-small" style="grid-template-columns: repeat(3, 50px);">
+            <div class="cell-small"></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"><span class="red">RD</span></div>
+            <div class="cell-small"><span class="blue">BD</span></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"><span class="red">RD</span></div>
+            <div class="cell-small"></div>
+        </div>
+        <p>The Blue dog is NOT on the same axis as both Red dogs.</p>
+
+        <p style="margin-top: 15px;"><strong>Captured:</strong></p>
+        <div class="grid-small" style="grid-template-columns: repeat(3, 50px);">
+            <div class="cell-small"><span class="red">RD</span></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"><span class="blue">BD</span></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"><span class="red">RD</span></div>
+        </div>
+        <p>The Blue dog is surrounded on a diagonal axis - it's captured!</p>
+    </div>
+
+    <div class="highlight">
+        <p><strong>Important:</strong> Captures happen <strong>simultaneously</strong>. Both pieces can capture each
+            other in the same turn.</p>
+        <div class="grid-small" style="grid-template-columns: repeat(4, 50px); margin-top: 10px;">
+            <div class="cell-small"><span class="red">RD</span></div>
+            <div class="cell-small"><span class="blue">BD</span></div>
+            <div class="cell-small"><span class="red">RD</span></div>
+            <div class="cell-small"><span class="blue">BD</span></div>
+        </div>
+        <p style="text-align: center;">Both center pieces get captured!</p>
+    </div>
+
+    <h2>Chariots - The Special Piece</h2>
+    <p>Chariots move like dogs but have special properties:</p>
+
+    <div class="rule-box">
+        <h3 style="margin-top: 0;">Chariot Rules</h3>
+        <ul>
+            <li><strong>Cannot be captured</strong> - Instead, they get <em>stunned</em></li>
+            <li><strong>Win condition</strong> - Reaching the opponent's back row wins instantly</li>
+        </ul>
+    </div>
+
+    <h3>Stunned Chariots</h3>
+    <p>When a chariot is surrounded by enemy pieces on the same axis, it becomes <strong>stunned</strong>:</p>
+    <ul>
+        <li>❌ Cannot be moved by its owner</li>
+        <li>❌ Does not hop when adjacent pieces move</li>
+        <li>❌ Does not count for capturing enemy dogs</li>
+    </ul>
+
+    <div class="example">
+        <div class="grid-small">
+            <div class="cell-small"><span class="red">RD</span></div>
+            <div class="cell-small"><span class="blue">BC</span></div>
+            <div class="cell-small"><span class="red">RD</span></div>
+            <div class="cell-small"><span class="blue">BD</span></div>
+        </div>
+        <p>The Blue chariot is stunned. The middle Red dog is SAFE because the stunned chariot doesn't count as a
+            surrounding piece.</p>
+    </div>
+
+    <h2>Illegal Moves</h2>
+    <div class="highlight">
+        <p><strong>You cannot move a piece to a square where it would immediately be captured or stunned.</strong></p>
+        <p>However, you CAN make a move that causes your allied pieces to hop into danger.</p>
+    </div>
+
+    <h2>Strategy Tips</h2>
+
+    <div class="strategy-tip">
+        <strong>💡 Control Territory</strong>
+        <p>Capture enemy pieces to gain numerical advantage. More pieces means more control!</p>
+    </div>
+
+    <div class="strategy-tip">
+        <strong>💡 Stick Together</strong>
+        <p>Lone dogs are easy targets. Groups of dogs are much harder to capture and can threaten enemy pieces.</p>
+    </div>
+
+    <div class="strategy-tip">
+        <strong>💡 Create Capture Opportunities</strong>
+        <p>Look for two of your pieces on the same axis with one empty space between them:</p>
+        <div class="grid-small">
+            <div class="cell-small"><span class="red">RD</span></div>
+            <div class="cell-small"><span class="red">RD</span> <span class="arrow">→</span></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"><span class="blue">BD</span></div>
+        </div>
+        <p>Moving the right Red dog will hop the Blue dog between them for a capture!</p>
+    </div>
+
+    <div class="strategy-tip">
+        <strong>💡 Use "Death Squares"</strong>
+        <p>Position pieces one space apart to create traps:</p>
+        <div class="grid-small" style="grid-template-columns: repeat(3, 50px);">
+            <div class="cell-small"><span class="red">RD</span></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"></div>
+            <div class="cell-small">💀</div>
+            <div class="cell-small"></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"></div>
+            <div class="cell-small"><span class="red">RD</span></div>
+        </div>
+        <p>Any piece hopped into the center will be captured! Works on diagonals too.</p>
+    </div>
+
+    <div class="strategy-tip">
+        <strong>💡 Advance Groups Backward</strong>
+        <p>Counter-intuitively, moving your frontmost piece backward hops your other pieces forward while keeping your
+            formation together.</p>
+    </div>
+
+    <div class="strategy-tip">
+        <strong>💡 Protect Your Chariot</strong>
+        <p>Chariots can advance quickly but can be hopped backward by enemies. Keep allied dogs behind your chariot to
+            block enemy hops and provide support if it gets stunned.</p>
+    </div>
+
+    <hr style="margin-top: 40px; border: none; border-top: 2px solid #ccc;">
+    <p style="text-align: center; color: #7f8c8d; margin-top: 20px;">
+        <strong>Polis</strong> - A game of tactical positioning and dynamic board control
+    </p>
+</body>
+
+</html>
