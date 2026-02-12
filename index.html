@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Polis</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      user-select: none;
+    }
+
+    #app {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 2.2em;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      color: #ccc;
+      font-weight: 300;
+    }
+
+    #turn-indicator {
+      font-size: 1.15em;
+      padding: 8px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    #turn-indicator.blue {
+      background: #1e3a5f;
+      color: #5ea8f5;
+    }
+
+    #turn-indicator.red {
+      background: #5f1e1e;
+      color: #f55e5e;
+    }
+
+    #turn-indicator.over {
+      background: #3a3a3a;
+      color: #aaa;
+    }
+
+    #info-bar {
+      display: flex;
+      gap: 24px;
+      font-size: 0.9em;
+    }
+
+    .score {
+      padding: 6px 14px;
+      border-radius: 6px;
+    }
+
+    .score.blue {
+      background: rgba(94, 168, 245, 0.1);
+      border: 1px solid rgba(94, 168, 245, 0.25);
+      color: #5ea8f5;
+    }
+
+    .score.red {
+      background: rgba(245, 94, 94, 0.1);
+      border: 1px solid rgba(245, 94, 94, 0.25);
+      color: #f55e5e;
+    }
+
+    #board-wrapper {
+      position: relative;
+      padding: 22px 22px 22px 22px;
+    }
+
+    .row-label {
+      position: absolute;
+      left: 4px;
+      font-size: 0.75em;
+      color: #666;
+      width: 14px;
+      text-align: center;
+    }
+
+    .col-label {
+      position: absolute;
+      bottom: 4px;
+      font-size: 0.75em;
+      color: #666;
+      text-align: center;
+    }
+
+    #board {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 0;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+      --cell-size: min(9vw, 9vh, 64px);
+      width: calc(var(--cell-size) * 8);
+      height: calc(var(--cell-size) * 8);
+      position: relative;
+    }
+
+    #hop-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+      overflow: visible;
+    }
+
+    #hop-svg line {
+      stroke-dasharray: 5 4;
+      stroke-linecap: round;
+    }
+
+    #hop-svg circle.hop-ghost {
+      opacity: 0.5;
+    }
+
+    .cell {
+      width: var(--cell-size);
+      height: var(--cell-size);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      position: relative;
+      transition: filter 0.1s;
+    }
+
+    .cell:hover {
+      filter: brightness(1.1);
+    }
+
+    .cell.light {
+      background: #c8ad7f;
+    }
+
+    .cell.dark {
+      background: #8b6f47;
+    }
+
+    .cell.selected {
+      box-shadow: inset 0 0 0 3px #ffd700;
+      z-index: 2;
+    }
+
+    .cell.valid-move::after {
+      content: '';
+      width: 28%;
+      height: 28%;
+      background: rgba(255, 215, 0, 0.55);
+      border-radius: 50%;
+      position: absolute;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .cell.valid-move:hover::after {
+      width: 85%;
+      height: 85%;
+      background: rgba(255, 215, 0, 0.18);
+    }
+
+    .cell.last-from {
+      background: rgba(255, 215, 0, 0.15);
+    }
+
+    .cell.last-to {
+      background: rgba(255, 215, 0, 0.22);
+    }
+
+    .cell.last-from.light {
+      background: #d4bc7a;
+    }
+
+    .cell.last-from.dark {
+      background: #9a7e4a;
+    }
+
+    .cell.last-to.light {
+      background: #dcc56e;
+    }
+
+    .cell.last-to.dark {
+      background: #a88c3e;
+    }
+
+    .piece {
+      width: 78%;
+      height: 78%;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      position: relative;
+      z-index: 3;
+      transition: transform 0.12s;
+    }
+
+    .piece:hover {
+      transform: scale(1.08);
+    }
+
+    .piece.blue-dog {
+      background: radial-gradient(circle at 35% 35%, #6bbcff, #3a7fd5);
+      border: 2px solid #7ecaff;
+      box-shadow: 0 2px 6px rgba(58, 127, 213, 0.4);
+    }
+
+    .piece.red-dog {
+      background: radial-gradient(circle at 35% 35%, #ff6b6b, #d53a3a);
+      border: 2px solid #ff7e7e;
+      box-shadow: 0 2px 6px rgba(213, 58, 58, 0.4);
+    }
+
+    .piece.blue-chariot {
+      background: radial-gradient(circle at 35% 35%, #6bbcff, #3a7fd5);
+      border: 3px solid #ffd700;
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.4), 0 2px 6px rgba(58, 127, 213, 0.4);
+      font-size: calc(var(--cell-size) * 0.38);
+      color: #ffd700;
+    }
+
+    .piece.red-chariot {
+      background: radial-gradient(circle at 35% 35%, #ff6b6b, #d53a3a);
+      border: 3px solid #ffd700;
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.4), 0 2px 6px rgba(213, 58, 58, 0.4);
+      font-size: calc(var(--cell-size) * 0.38);
+      color: #ffd700;
+    }
+
+    .piece.stunned {
+      opacity: 0.45;
+      filter: grayscale(0.6) brightness(0.7);
+      box-shadow: none;
+      border-style: dashed;
+    }
+
+    #status {
+      font-size: 0.95em;
+      min-height: 1.4em;
+      color: #888;
+      text-align: center;
+    }
+
+    #buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    button {
+      padding: 9px 22px;
+      font-size: 0.95em;
+      background: #2a2a3e;
+      color: #ccc;
+      border: 1px solid #444;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    button:hover {
+      background: #3a3a50;
+    }
+
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.82);
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+
+    #overlay.show {
+      display: flex;
+    }
+
+    #overlay-content {
+      text-align: center;
+      padding: 44px 52px;
+      background: #22223a;
+      border-radius: 14px;
+      border: 1px solid #444;
+      max-width: 90vw;
+    }
+
+    #overlay-content h2 {
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+
+    #overlay-content p {
+      color: #999;
+      margin-bottom: 18px;
+    }
+
+    #overlay-content button {
+      font-size: 1.05em;
+      padding: 10px 28px;
+    }
+
+    #rules-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.82);
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+
+    #rules-overlay.show {
+      display: flex;
+    }
+
+    #rules-content {
+      background: #22223a;
+      border-radius: 14px;
+      border: 1px solid #444;
+      padding: 32px;
+      max-width: 560px;
+      max-height: 80vh;
+      overflow-y: auto;
+      line-height: 1.6;
+      font-size: 0.92em;
+    }
+
+    #rules-content h2 {
+      margin-bottom: 14px;
+      color: #ddd;
+    }
+
+    #rules-content h3 {
+      margin-top: 14px;
+      margin-bottom: 6px;
+      color: #bbb;
+    }
+
+    #rules-content p {
+      margin-bottom: 8px;
+      color: #999;
+    }
+
+    #rules-content .legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin: 10px 0;
+    }
+
+    #rules-content .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #rules-content .legend-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    #rules-content .legend-dot.bd {
+      background: #3a7fd5;
+      border: 2px solid #7ecaff;
+    }
+
+    #rules-content .legend-dot.rd {
+      background: #d53a3a;
+      border: 2px solid #ff7e7e;
+    }
+
+    #rules-content .legend-dot.bc {
+      background: #3a7fd5;
+      border: 2px solid #ffd700;
+    }
+
+    #rules-content .legend-dot.rc {
+      background: #d53a3a;
+      border: 2px solid #ffd700;
+    }
+
+    #rules-content button {
+      margin-top: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <h1>Polis</h1>
+    <div id="turn-indicator" class="blue">Blue's Turn</div>
+    <div id="info-bar">
+      <div class="score blue">Blue: <span id="blue-count">15</span> dogs</div>
+      <div class="score red">Red: <span id="red-count">15</span> dogs</div>
+    </div>
+    <div id="board-wrapper">
+      <div id="board"></div>
+    </div>
+    <div id="status"></div>
+    <div id="buttons">
+      <button onclick="initGame()">New Game</button>
+      <button onclick="showRules()">Rules</button>
+    </div>
+  </div>
+
+  <div id="overlay">
+    <div id="overlay-content">
+      <h2 id="winner-text"></h2>
+      <p id="win-reason"></p>
+      <button onclick="hideOverlay(); initGame();">Play Again</button>
+    </div>
+  </div>
+
+  <div id="rules-overlay" onclick="this.classList.remove('show')">
+    <div id="rules-content" onclick="event.stopPropagation()">
+      <h2>How to Play Polis</h2>
+      <div class="legend">
+        <div class="legend-item"><span class="legend-dot bd"></span> Blue Dog</div>
+        <div class="legend-item"><span class="legend-dot rd"></span> Red Dog</div>
+        <div class="legend-item"><span class="legend-dot bc"></span> Blue Chariot</div>
+        <div class="legend-item"><span class="legend-dot rc"></span> Red Chariot</div>
+      </div>
+      <h3>Goal</h3>
+      <p>Move your chariot to the far rank (opposite side of the board) to win.</p>
+      <h3>Movement</h3>
+      <p>On your turn, move one of your pieces one square in any direction (including diagonals) to an empty square.</p>
+      <h3>Hopping</h3>
+      <p>After a piece moves, all adjacent pieces "hop" to the opposite side of the moved piece. A piece won't hop if:
+        the target square is occupied or off the board; it's a stunned chariot; or it's an enemy piece anchored by
+        another enemy piece behind it along the same axis.</p>
+      <h3>Capturing</h3>
+      <p>After hops resolve, any dog surrounded on opposite sides along the same axis (horizontal, vertical, or
+        diagonal) by enemy pieces is captured and removed. Captures are simultaneous.</p>
+      <h3>Chariots</h3>
+      <p>Chariots cannot be captured. Instead, a surrounded chariot is <strong>stunned</strong>: it can't move, doesn't
+        hop, and doesn't count for captures.</p>
+      <h3>Illegal Moves</h3>
+      <p>You cannot move a piece to a square where it would be immediately captured or stunned. You may move a piece
+        even if it hops an ally into danger.</p>
+      <button onclick="document.getElementById('rules-overlay').classList.remove('show')">Close</button>
+    </div>
+  </div>
+
+  <script>
+    const ROWS = 8, COLS = 8;
+    const DIRS = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
+    const AXES = [[0, 1], [1, 0], [1, 1], [1, -1]];
+
+    let board, currentPlayer, selectedCell, validMoves, gameOver, statusMsg, lastMove;
+
+    function makePiece(team, type) {
+      return { team, type, stunned: false };
+    }
+
+    function cloneBoard(b) {
+      return b.map(row => row.map(cell => cell ? { ...cell } : null));
+    }
+
+    function inBounds(r, c) {
+      return r >= 0 && r < ROWS && c >= 0 && c < COLS;
+    }
+
+    // --- Game Logic ---
+
+    function initGame() {
+      board = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+      // Blue: rows 0-1, chariot at (0,0)
+      for (let r = 0; r < 2; r++)
+        for (let c = 0; c < COLS; c++)
+          board[r][c] = makePiece('blue', 'dog');
+      board[0][0] = makePiece('blue', 'chariot');
+
+      // Red: rows 6-7, chariot at (7,7)
+      for (let r = 6; r < 8; r++)
+        for (let c = 0; c < COLS; c++)
+          board[r][c] = makePiece('red', 'dog');
+      board[7][7] = makePiece('red', 'chariot');
+
+      currentPlayer = 'blue';
+      selectedCell = null;
+      validMoves = [];
+      gameOver = false;
+      statusMsg = 'Blue goes first. Click a piece to select it.';
+      lastMove = null;
+      hideOverlay();
+      render();
+    }
+
+    function updateStun(b) {
+      for (let r = 0; r < ROWS; r++)
+        for (let c = 0; c < COLS; c++) {
+          const p = b[r][c];
+          if (p && p.type === 'chariot')
+            p.stunned = checkStunAt(b, r, c);
+        }
+    }
+
+    function checkStunAt(b, r, c) {
+      const p = b[r][c];
+      if (!p || p.type !== 'chariot') return false;
+      const enemy = p.team === 'blue' ? 'red' : 'blue';
+      for (const [dr, dc] of AXES) {
+        const r1 = r + dr, c1 = c + dc;
+        const r2 = r - dr, c2 = c - dc;
+        if (inBounds(r1, c1) && inBounds(r2, c2)) {
+          const p1 = b[r1][c1], p2 = b[r2][c2];
+          if (p1 && p1.team === enemy && p2 && p2.team === enemy)
+            return true;
+        }
+      }
+      return false;
+    }
+
+    function computeHops(b, toR, toC) {
+      const mover = b[toR][toC];
+      if (!mover) return [];
+      const moverTeam = mover.team;
+
+      const hops = [];
+      for (const [dr, dc] of DIRS) {
+        const nr = toR + dr, nc = toC + dc;
+        const tr = toR - dr, tc = toC - dc;
+        if (!inBounds(nr, nc) || !inBounds(tr, tc)) continue;
+
+        const neighbor = b[nr][nc];
+        if (!neighbor) continue;
+
+        if (neighbor.type === 'chariot' && neighbor.stunned) continue;
+        if (b[tr][tc] !== null) continue;
+
+        if (neighbor.team !== moverTeam) {
+          const defR = toR + 2 * dr, defC = toC + 2 * dc;
+          if (inBounds(defR, defC)) {
+            const defender = b[defR][defC];
+            if (defender && defender.team === neighbor.team) continue;
+          }
+        }
+
+        hops.push({ fromR: nr, fromC: nc, toR: tr, toC: tc, piece: neighbor });
+      }
+      return hops;
+    }
+
+    function resolveHops(b, toR, toC) {
+      const hops = computeHops(b, toR, toC);
+
+      // Apply simultaneously
+      const pieces = hops.map(h => b[h.fromR][h.fromC]);
+      hops.forEach(h => { b[h.fromR][h.fromC] = null; });
+      hops.forEach((h, i) => { b[h.toR][h.toC] = pieces[i]; });
+    }
+
+    function getHopPreview(fromR, fromC, toR, toC) {
+      const sim = cloneBoard(board);
+      sim[toR][toC] = sim[fromR][fromC];
+      sim[fromR][fromC] = null;
+      updateStun(sim);
+      return computeHops(sim, toR, toC);
+    }
+
+    function computeCaptures(b) {
+      const captured = [];
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const p = b[r][c];
+          if (!p || p.type === 'chariot') continue; // chariots get stunned, not captured
+          const enemy = p.team === 'blue' ? 'red' : 'blue';
+          for (const [dr, dc] of AXES) {
+            const r1 = r + dr, c1 = c + dc;
+            const r2 = r - dr, c2 = c - dc;
+            if (!inBounds(r1, c1) || !inBounds(r2, c2)) continue;
+            const p1 = b[r1][c1], p2 = b[r2][c2];
+            if (p1 && p1.team === enemy && !(p1.type === 'chariot' && p1.stunned) &&
+              p2 && p2.team === enemy && !(p2.type === 'chariot' && p2.stunned)) {
+              captured.push([r, c]);
+              break;
+            }
+          }
+        }
+      }
+      return captured;
+    }
+
+    function executeMove(b, fromR, fromC, toR, toC) {
+      b[toR][toC] = b[fromR][fromC];
+      b[fromR][fromC] = null;
+
+      // Recompute stun after move (moving may change surrounding)
+      updateStun(b);
+
+      // Resolve hops
+      resolveHops(b, toR, toC);
+
+      // Recompute stun after hops
+      updateStun(b);
+
+      // Compute and apply captures
+      const captured = computeCaptures(b);
+      captured.forEach(([r, c]) => { b[r][c] = null; });
+
+      // Recompute stun after captures
+      updateStun(b);
+
+      return captured;
+    }
+
+    function isMoveLegal(b, fromR, fromC, toR, toC) {
+      const piece = b[fromR][fromC];
+      if (!piece) return false;
+      if (!inBounds(toR, toC) || b[toR][toC] !== null) return false;
+      const dr = Math.abs(toR - fromR), dc = Math.abs(toC - fromC);
+      if (dr > 1 || dc > 1 || (dr === 0 && dc === 0)) return false;
+
+      // Simulate full resolution on a clone
+      const sim = cloneBoard(b);
+      executeMove(sim, fromR, fromC, toR, toC);
+
+      // Check if moved piece survived
+      const movedPiece = sim[toR][toC];
+      if (!movedPiece) return false; // captured
+      if (movedPiece.type === 'chariot' && movedPiece.stunned) return false;
+      return true;
+    }
+
+    function getValidMoves(b, r, c) {
+      const piece = b[r][c];
+      if (!piece) return [];
+      if (piece.type === 'chariot' && piece.stunned) return [];
+      const moves = [];
+      for (const [dr, dc] of DIRS) {
+        const tr = r + dr, tc = c + dc;
+        if (inBounds(tr, tc) && b[tr][tc] === null && isMoveLegal(b, r, c, tr, tc))
+          moves.push([tr, tc]);
+      }
+      return moves;
+    }
+
+    function checkWin(b) {
+      for (let c = 0; c < COLS; c++) {
+        const p7 = b[7][c];
+        if (p7 && p7.type === 'chariot' && p7.team === 'blue') return 'blue';
+        const p0 = b[0][c];
+        if (p0 && p0.type === 'chariot' && p0.team === 'red') return 'red';
+      }
+      return null;
+    }
+
+    function hasAnyMoves(b, player) {
+      for (let r = 0; r < ROWS; r++)
+        for (let c = 0; c < COLS; c++) {
+          const p = b[r][c];
+          if (p && p.team === player && getValidMoves(b, r, c).length > 0) return true;
+        }
+      return false;
+    }
+
+    function countPieces(b, team) {
+      let dogs = 0;
+      for (let r = 0; r < ROWS; r++)
+        for (let c = 0; c < COLS; c++) {
+          const p = b[r][c];
+          if (p && p.team === team && p.type === 'dog') dogs++;
+        }
+      return dogs;
+    }
+
+    // --- UI ---
+
+    function cap(s) { return s[0].toUpperCase() + s.slice(1); }
+
+    function render() {
+      const container = document.getElementById('board');
+      container.innerHTML = '';
+
+      // Add SVG overlay for hop previews
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.id = 'hop-svg';
+      container.appendChild(svg);
+
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const cell = document.createElement('div');
+          const isLight = (r + c) % 2 === 0;
+          cell.className = 'cell ' + (isLight ? 'light' : 'dark');
+
+          if (selectedCell && selectedCell[0] === r && selectedCell[1] === c)
+            cell.classList.add('selected');
+
+          const isValidMove = validMoves.some(([mr, mc]) => mr === r && mc === c);
+          if (isValidMove)
+            cell.classList.add('valid-move');
+
+          if (lastMove) {
+            if (lastMove.fromR === r && lastMove.fromC === c) cell.classList.add('last-from');
+            if (lastMove.toR === r && lastMove.toC === c) cell.classList.add('last-to');
+          }
+
+          const piece = board[r][c];
+          if (piece) {
+            const el = document.createElement('div');
+            el.className = `piece ${piece.team}-${piece.type}`;
+            if (piece.stunned) el.classList.add('stunned');
+            if (piece.type === 'chariot') el.textContent = '\u2605';
+            cell.appendChild(el);
+          }
+
+          cell.addEventListener('click', () => handleClick(r, c));
+
+          if (isValidMove && selectedCell) {
+            const [fromR, fromC] = selectedCell;
+            cell.addEventListener('mouseenter', () => drawHopPreview(fromR, fromC, r, c));
+            cell.addEventListener('mouseleave', clearHopPreview);
+          }
+
+          container.appendChild(cell);
+        }
+      }
+
+      const turnEl = document.getElementById('turn-indicator');
+      if (gameOver) {
+        turnEl.textContent = 'Game Over';
+        turnEl.className = 'over';
+      } else {
+        turnEl.textContent = cap(currentPlayer) + "'s Turn";
+        turnEl.className = currentPlayer;
+      }
+
+      document.getElementById('blue-count').textContent = countPieces(board, 'blue');
+      document.getElementById('red-count').textContent = countPieces(board, 'red');
+      document.getElementById('status').textContent = statusMsg;
+    }
+
+    function cellCenter(r, c) {
+      const svg = document.getElementById('hop-svg');
+      if (!svg) return { x: 0, y: 0 };
+      const w = svg.clientWidth / COLS;
+      const h = svg.clientHeight / ROWS;
+      return { x: c * w + w / 2, y: r * h + h / 2 };
+    }
+
+    function drawHopPreview(fromR, fromC, toR, toC) {
+      const svg = document.getElementById('hop-svg');
+      if (!svg) return;
+      svg.innerHTML = '';
+
+      const hops = getHopPreview(fromR, fromC, toR, toC);
+      if (hops.length === 0) return;
+
+      const cellW = svg.clientWidth / COLS;
+      const cellH = svg.clientHeight / ROWS;
+      const ghostR = cellW * 0.30;
+
+      for (const hop of hops) {
+        const from = cellCenter(hop.fromR, hop.fromC);
+        const to = cellCenter(hop.toR, hop.toC);
+        const color = hop.piece.team === 'blue' ? '#5ea8f5' : '#f55e5e';
+
+        // Dotted line
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', from.x);
+        line.setAttribute('y1', from.y);
+        line.setAttribute('x2', to.x);
+        line.setAttribute('y2', to.y);
+        line.setAttribute('stroke', color);
+        line.setAttribute('stroke-width', 2.2);
+        line.setAttribute('stroke-opacity', 0.55);
+        svg.appendChild(line);
+
+        // Arrowhead
+        const dx = to.x - from.x, dy = to.y - from.y;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        if (len < 1) continue;
+        const ux = dx / len, uy = dy / len;
+        const tipX = to.x - ux * ghostR, tipY = to.y - uy * ghostR;
+        const aSize = 6;
+        const px = -uy, py = ux;
+        const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        arrow.setAttribute('points',
+          `${tipX},${tipY} ${tipX - ux * aSize + px * aSize * 0.6},${tipY - uy * aSize + py * aSize * 0.6} ${tipX - ux * aSize - px * aSize * 0.6},${tipY - uy * aSize - py * aSize * 0.6}`
+        );
+        arrow.setAttribute('fill', color);
+        arrow.setAttribute('opacity', '0.55');
+        svg.appendChild(arrow);
+
+        // Ghost circle at destination
+        const ghost = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        ghost.setAttribute('cx', to.x);
+        ghost.setAttribute('cy', to.y);
+        ghost.setAttribute('r', ghostR);
+        ghost.setAttribute('fill', color);
+        ghost.setAttribute('opacity', '0.25');
+        ghost.setAttribute('stroke', color);
+        ghost.setAttribute('stroke-width', '1.5');
+        ghost.setAttribute('stroke-opacity', '0.4');
+        ghost.setAttribute('stroke-dasharray', '4 3');
+        ghost.classList.add('hop-ghost');
+        svg.appendChild(ghost);
+      }
+    }
+
+    function clearHopPreview() {
+      const svg = document.getElementById('hop-svg');
+      if (svg) svg.innerHTML = '';
+    }
+
+    function handleClick(r, c) {
+      if (gameOver) return;
+
+      // Clicking a valid move destination
+      if (selectedCell && validMoves.some(([mr, mc]) => mr === r && mc === c)) {
+        const [fromR, fromC] = selectedCell;
+        const movedPiece = board[fromR][fromC];
+        const captured = executeMove(board, fromR, fromC, r, c);
+
+        lastMove = { fromR, fromC, toR: r, toC: c };
+
+        // Build status
+        const msgs = [];
+        if (captured.length > 0)
+          msgs.push(`${captured.length} piece${captured.length > 1 ? 's' : ''} captured!`);
+
+        for (let sr = 0; sr < ROWS; sr++)
+          for (let sc = 0; sc < COLS; sc++) {
+            const sp = board[sr][sc];
+            if (sp && sp.type === 'chariot' && sp.stunned)
+              msgs.push(`${cap(sp.team)} chariot is stunned!`);
+          }
+
+        statusMsg = msgs.join(' ');
+
+        // Check win
+        const winner = checkWin(board);
+        if (winner) {
+          gameOver = true;
+          selectedCell = null;
+          validMoves = [];
+          render();
+          showWin(winner, 'Chariot reached the final rank!');
+          return;
+        }
+
+        // Switch turns
+        currentPlayer = currentPlayer === 'blue' ? 'red' : 'blue';
+        selectedCell = null;
+        validMoves = [];
+
+        if (!hasAnyMoves(board, currentPlayer)) {
+          gameOver = true;
+          const w = currentPlayer === 'blue' ? 'red' : 'blue';
+          render();
+          showWin(w, `${cap(currentPlayer)} has no valid moves!`);
+          return;
+        }
+
+        if (!statusMsg) statusMsg = `${cap(currentPlayer)}'s turn.`;
+        render();
+        return;
+      }
+
+      // Clicking own piece
+      const piece = board[r][c];
+      if (piece && piece.team === currentPlayer) {
+        if (piece.type === 'chariot' && piece.stunned) {
+          selectedCell = null;
+          validMoves = [];
+          statusMsg = 'Your chariot is stunned and cannot move!';
+          render();
+          return;
+        }
+        const moves = getValidMoves(board, r, c);
+        if (moves.length > 0) {
+          selectedCell = [r, c];
+          validMoves = moves;
+          statusMsg = `Selected ${piece.type}. Click a highlighted square to move.`;
+        } else {
+          selectedCell = [r, c];
+          validMoves = [];
+          statusMsg = 'This piece has no valid moves.';
+        }
+        render();
+        return;
+      }
+
+      // Clicking elsewhere: deselect
+      selectedCell = null;
+      validMoves = [];
+      statusMsg = '';
+      render();
+    }
+
+    function showWin(winner, reason) {
+      const h = document.getElementById('winner-text');
+      h.textContent = cap(winner) + ' Wins!';
+      h.style.color = winner === 'blue' ? '#5ea8f5' : '#f55e5e';
+      document.getElementById('win-reason').textContent = reason;
+      document.getElementById('overlay').classList.add('show');
+    }
+
+    function hideOverlay() {
+      document.getElementById('overlay').classList.remove('show');
+    }
+
+    function showRules() {
+      document.getElementById('rules-overlay').classList.add('show');
+    }
+
+    // --- Init ---
+    initGame();
+  </script>
+</body>
+
+</html>
