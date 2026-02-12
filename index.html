@@ -4,8 +4,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Polis</title>
+  <title>POLIS — The Board Game</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cinzel+Decorative:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap"
+    rel="stylesheet">
   <style>
+    :root {
+      --marble: #f0e8d8;
+      --marble2: #e8dcc8;
+      --stone: #c8b89a;
+      --terracotta: #b85c38;
+      --terracotta2: #d4703a;
+      --bronze: #7a5c2e;
+      --bronze2: #9a7a42;
+      --deep: #2a1a0e;
+      --ink: #1a0e06;
+      --blue-lapis: #1a3a6a;
+      --blue-mid: #2a5a9a;
+      --blue-light: #4a8acc;
+      --red-deep: #7a1a10;
+      --red-mid: #b83020;
+      --red-light: #e04030;
+      --gold: #c8a830;
+      --gold2: #e8c840;
+      --shadow: rgba(26, 14, 6, 0.5);
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -13,111 +37,242 @@
     }
 
     body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: #1a1a2e;
-      color: #e0e0e0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      background: var(--deep);
+      font-family: 'EB Garamond', serif;
       min-height: 100vh;
-      user-select: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 10px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Subtle mosaic background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(200, 168, 48, 0.04) 40px),
+        repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(200, 168, 48, 0.04) 40px);
+      pointer-events: none;
+      z-index: 0;
     }
 
     #app {
+      position: relative;
+      z-index: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 14px;
-      padding: 20px;
+      padding: 0;
+      width: 100%;
+      max-width: 650px;
     }
 
-    h1 {
-      font-size: 2.2em;
-      letter-spacing: 6px;
-      text-transform: uppercase;
-      color: #ccc;
-      font-weight: 300;
-    }
-
-    #turn-indicator {
-      font-size: 1.15em;
-      padding: 8px 24px;
-      border-radius: 8px;
-      font-weight: 600;
-      transition: background 0.3s, color 0.3s;
-    }
-
-    #turn-indicator.blue {
-      background: #1e3a5f;
-      color: #5ea8f5;
-    }
-
-    #turn-indicator.red {
-      background: #5f1e1e;
-      color: #f55e5e;
-    }
-
-    #turn-indicator.over {
-      background: #3a3a3a;
-      color: #aaa;
-    }
-
-    #info-bar {
-      display: flex;
-      gap: 24px;
-      font-size: 0.9em;
-    }
-
-    .score {
-      padding: 6px 14px;
-      border-radius: 6px;
-    }
-
-    .score.blue {
-      background: rgba(94, 168, 245, 0.1);
-      border: 1px solid rgba(94, 168, 245, 0.25);
-      color: #5ea8f5;
-    }
-
-    .score.red {
-      background: rgba(245, 94, 94, 0.1);
-      border: 1px solid rgba(245, 94, 94, 0.25);
-      color: #f55e5e;
-    }
-
-    #board-wrapper {
+    /* ── HEADER ─────────────────────────────────── */
+    .header {
       position: relative;
-      padding: 22px 22px 22px 22px;
-    }
-
-    .row-label {
-      position: absolute;
-      left: 4px;
-      font-size: 0.75em;
-      color: #666;
-      width: 14px;
+      z-index: 1;
       text-align: center;
+      margin-bottom: 20px;
     }
 
-    .col-label {
-      position: absolute;
-      bottom: 4px;
-      font-size: 0.75em;
-      color: #666;
+    .header h1 {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(28px, 6vw, 54px);
+      color: var(--gold);
+      text-shadow: 0 2px 8px var(--shadow), 0 0 40px rgba(200, 168, 48, 0.3);
+      letter-spacing: 0.15em;
+      line-height: 1;
+    }
+
+    .header .subtitle {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(10px, 2vw, 14px);
+      color: var(--stone);
+      letter-spacing: 0.3em;
+      margin-top: 6px;
+      text-transform: uppercase;
+    }
+
+    .header .ornament {
+      color: var(--gold);
+      font-size: 20px;
+      opacity: 0.6;
+      display: block;
+      margin: 6px 0;
+    }
+
+    /* ── PLAYER BANNERS ─────────────────────────── */
+    .players {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .player-card {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 4px;
+      border: 2px solid;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+
+    .player-card.blue {
+      background: linear-gradient(135deg, rgba(26, 58, 106, 0.9) 0%, rgba(42, 90, 154, 0.8) 100%);
+      border-color: var(--blue-light);
+    }
+
+    .player-card.red {
+      background: linear-gradient(135deg, rgba(122, 26, 16, 0.9) 0%, rgba(184, 48, 32, 0.8) 100%);
+      border-color: var(--red-light);
+    }
+
+    .player-card.active-turn {
+      box-shadow: 0 0 20px 4px currentColor;
+      transform: translateY(-2px);
+    }
+
+    .player-card.blue.active-turn {
+      box-shadow: 0 0 20px 4px var(--blue-light);
+    }
+
+    .player-card.red.active-turn {
+      box-shadow: 0 0 20px 4px var(--red-light);
+    }
+
+    .player-card .p-name {
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .player-card.blue .p-name {
+      color: var(--blue-light);
+    }
+
+    .player-card.red .p-name {
+      color: var(--red-light);
+    }
+
+    .player-card .p-count {
+      font-size: 22px;
+      font-weight: bold;
+      margin-top: 2px;
+      color: var(--marble);
+    }
+
+    .player-card .p-label {
+      font-size: 11px;
+      color: var(--stone);
+      font-style: italic;
+    }
+
+    .turn-arrow {
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      color: var(--gold);
+      opacity: 0.7;
+    }
+
+    /* ── STATUS BAR ─────────────────────────────── */
+    .status-bar {
+      position: relative;
+      z-index: 1;
+      background: rgba(42, 26, 14, 0.8);
+      border: 1px solid var(--bronze);
+      border-radius: 4px;
+      padding: 8px 20px;
+      margin-bottom: 14px;
+      font-family: 'Cinzel', serif;
+      font-size: clamp(11px, 2vw, 14px);
+      color: var(--marble);
+      letter-spacing: 0.05em;
       text-align: center;
+      min-height: 36px;
+      max-width: 600px;
+      width: 100%;
+      transition: color 0.3s;
     }
 
+    .status-bar.phase-select {
+      color: var(--gold2);
+    }
+
+    .status-bar.phase-hop {
+      color: var(--stone);
+    }
+
+    .status-bar.phase-win {
+      color: var(--gold);
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    /* ── BOARD WRAPPER ──────────────────────────── */
+    .board-wrap {
+      position: relative;
+      z-index: 1;
+      background: linear-gradient(145deg, #3a2a1a, #2a1a0e);
+      border: 4px solid var(--bronze);
+      border-radius: 6px;
+      box-shadow: 0 0 0 2px var(--gold), 0 8px 40px var(--shadow), inset 0 0 40px rgba(0, 0, 0, 0.4);
+      padding: 12px;
+    }
+
+    .coord-row {
+      display: flex;
+      align-items: center;
+    }
+
+    .coord-labels-top,
+    .coord-labels-bottom {
+      display: flex;
+      margin-left: 22px;
+    }
+
+    .coord-label {
+      width: clamp(44px, 10vw, 64px);
+      text-align: center;
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      color: var(--bronze2);
+      letter-spacing: 0.1em;
+    }
+
+    .coord-side {
+      width: 20px;
+      flex-shrink: 0;
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      color: var(--bronze2);
+      text-align: right;
+      padding-right: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    /* ── BOARD GRID ─────────────────────────────── */
     #board {
       display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      gap: 0;
-      border-radius: 6px;
-      overflow: hidden;
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
-      --cell-size: min(9vw, 9vh, 64px);
-      width: calc(var(--cell-size) * 8);
-      height: calc(var(--cell-size) * 8);
+      grid-template-columns: repeat(8, clamp(44px, 10vw, 64px));
+      grid-template-rows: repeat(8, clamp(44px, 10vw, 64px));
+      border: 1px solid var(--bronze);
       position: relative;
+      --cell-size: clamp(44px, 10vw, 64px);
     }
 
     #hop-svg {
@@ -141,151 +296,268 @@
     }
 
     .cell {
-      width: var(--cell-size);
-      height: var(--cell-size);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
       position: relative;
-      transition: filter 0.1s;
-    }
-
-    .cell:hover {
-      filter: brightness(1.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: default;
+      border: 1px solid rgba(122, 92, 46, 0.3);
+      transition: background 0.15s;
     }
 
     .cell.light {
-      background: #c8ad7f;
+      background: var(--marble2);
     }
 
     .cell.dark {
-      background: #8b6f47;
+      background: var(--stone);
     }
 
-    .cell.selected {
-      box-shadow: inset 0 0 0 3px #ffd700;
-      z-index: 2;
+    .cell.valid-move {
+      background: rgba(200, 168, 48, 0.25) !important;
+      cursor: pointer;
     }
 
     .cell.valid-move::after {
       content: '';
-      width: 28%;
-      height: 28%;
-      background: rgba(255, 215, 0, 0.55);
-      border-radius: 50%;
       position: absolute;
-      z-index: 1;
+      inset: 0;
+      border: 2px solid var(--gold);
+      pointer-events: none;
+      animation: pulse 1s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulse {
+      from {
+        opacity: 0.4;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .cell.selected {
+      background: rgba(200, 168, 48, 0.35) !important;
+    }
+
+    .cell.selected::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border: 3px solid var(--gold2);
       pointer-events: none;
     }
 
-    .cell.valid-move:hover::after {
-      width: 85%;
-      height: 85%;
-      background: rgba(255, 215, 0, 0.18);
-    }
-
     .cell.last-from {
-      background: rgba(255, 215, 0, 0.15);
+      background: rgba(200, 168, 48, 0.15) !important;
     }
 
     .cell.last-to {
-      background: rgba(255, 215, 0, 0.22);
+      background: rgba(200, 168, 48, 0.22) !important;
     }
 
-    .cell.last-from.light {
-      background: #d4bc7a;
+    .cell.hopped-from {
+      animation: hopFrom 0.4s ease;
     }
 
-    .cell.last-from.dark {
-      background: #9a7e4a;
+    .cell.hopped-to {
+      animation: hopTo 0.4s ease;
     }
 
-    .cell.last-to.light {
-      background: #dcc56e;
+    @keyframes hopFrom {
+      0% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0.3
+      }
+
+      100% {
+        opacity: 1
+      }
     }
 
-    .cell.last-to.dark {
-      background: #a88c3e;
+    @keyframes hopTo {
+      0% {
+        transform: scale(0.6);
+        opacity: 0.5
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1
+      }
     }
 
+    /* ── PIECES ─────────────────────────────────── */
     .piece {
-      width: 78%;
-      height: 78%;
+      width: 76%;
+      height: 76%;
       border-radius: 50%;
       display: flex;
-      justify-content: center;
       align-items: center;
-      font-weight: bold;
+      justify-content: center;
+      font-size: clamp(14px, 3vw, 20px);
+      cursor: pointer;
       position: relative;
-      z-index: 3;
-      transition: transform 0.12s;
+      z-index: 2;
+      transition: transform 0.15s, box-shadow 0.15s;
+      user-select: none;
+      flex-shrink: 0;
     }
 
     .piece:hover {
-      transform: scale(1.08);
+      transform: scale(1.1);
+    }
+
+    .piece.selected-piece {
+      transform: scale(1.15);
     }
 
     .piece.blue-dog {
-      background: radial-gradient(circle at 35% 35%, #6bbcff, #3a7fd5);
-      border: 2px solid #7ecaff;
-      box-shadow: 0 2px 6px rgba(58, 127, 213, 0.4);
-    }
-
-    .piece.red-dog {
-      background: radial-gradient(circle at 35% 35%, #ff6b6b, #d53a3a);
-      border: 2px solid #ff7e7e;
-      box-shadow: 0 2px 6px rgba(213, 58, 58, 0.4);
+      background: radial-gradient(circle at 35% 35%, #5a8acc, var(--blue-mid), var(--blue-lapis));
+      border: 2px solid var(--blue-light);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+      color: #a8d0f8;
     }
 
     .piece.blue-chariot {
-      background: radial-gradient(circle at 35% 35%, #6bbcff, #3a7fd5);
-      border: 3px solid #ffd700;
-      box-shadow: 0 0 10px rgba(255, 215, 0, 0.4), 0 2px 6px rgba(58, 127, 213, 0.4);
-      font-size: calc(var(--cell-size) * 0.38);
-      color: #ffd700;
+      background: radial-gradient(circle at 35% 35%, #6a9adc, #1a5aaa, #0a2a5a);
+      border: 3px solid var(--gold);
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6), 0 0 12px rgba(200, 168, 48, 0.3), inset 0 1px 3px rgba(255, 255, 255, 0.3);
+      color: var(--gold2);
+      border-radius: 30% 30% 50% 50%;
+    }
+
+    .piece.red-dog {
+      background: radial-gradient(circle at 35% 35%, #e06050, var(--red-mid), var(--red-deep));
+      border: 2px solid var(--red-light);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+      color: #f8b0a8;
     }
 
     .piece.red-chariot {
-      background: radial-gradient(circle at 35% 35%, #ff6b6b, #d53a3a);
-      border: 3px solid #ffd700;
-      box-shadow: 0 0 10px rgba(255, 215, 0, 0.4), 0 2px 6px rgba(213, 58, 58, 0.4);
-      font-size: calc(var(--cell-size) * 0.38);
-      color: #ffd700;
+      background: radial-gradient(circle at 35% 35%, #f07060, #b02010, #6a0a08);
+      border: 3px solid var(--gold);
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6), 0 0 12px rgba(200, 168, 48, 0.3), inset 0 1px 3px rgba(255, 255, 255, 0.3);
+      color: var(--gold2);
+      border-radius: 30% 30% 50% 50%;
     }
 
     .piece.stunned {
-      opacity: 0.45;
-      filter: grayscale(0.6) brightness(0.7);
-      box-shadow: none;
-      border-style: dashed;
+      opacity: 0.65;
+      filter: saturate(0.4) brightness(0.8);
+      border-style: dashed !important;
     }
 
-    #status {
-      font-size: 0.95em;
-      min-height: 1.4em;
-      color: #888;
-      text-align: center;
+    .piece.clickable {
+      cursor: pointer;
     }
 
-    #buttons {
+    .piece.clickable:hover {
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6), 0 0 14px var(--gold2);
+      transform: scale(1.12);
+    }
+
+    /* ── BUTTONS ─────────────────────────────────── */
+    .btn-row {
+      position: relative;
+      z-index: 1;
       display: flex;
       gap: 12px;
+      margin-top: 14px;
+      justify-content: center;
+    }
+
+    .btn {
+      font-family: 'Cinzel', serif;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      padding: 9px 22px;
+      border: 2px solid var(--bronze2);
+      background: linear-gradient(135deg, rgba(122, 92, 46, 0.6), rgba(90, 64, 24, 0.8));
+      color: var(--marble);
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+    }
+
+    .btn:hover {
+      border-color: var(--gold);
+      color: var(--gold2);
+      background: linear-gradient(135deg, rgba(122, 92, 46, 0.8), rgba(90, 64, 24, 1));
+      box-shadow: 0 0 12px rgba(200, 168, 48, 0.3);
     }
 
     button {
+      font-family: 'Cinzel', serif;
+      font-size: 12px;
+      letter-spacing: 0.1em;
       padding: 9px 22px;
-      font-size: 0.95em;
-      background: #2a2a3e;
-      color: #ccc;
-      border: 1px solid #444;
-      border-radius: 6px;
+      border: 2px solid var(--bronze2);
+      background: linear-gradient(135deg, rgba(122, 92, 46, 0.6), rgba(90, 64, 24, 0.8));
+      color: var(--marble);
+      border-radius: 3px;
       cursor: pointer;
-      transition: background 0.15s;
+      transition: all 0.2s;
+      text-transform: uppercase;
     }
 
     button:hover {
-      background: #3a3a50;
+      border-color: var(--gold);
+      color: var(--gold2);
+      background: linear-gradient(135deg, rgba(122, 92, 46, 0.8), rgba(90, 64, 24, 1));
+      box-shadow: 0 0 12px rgba(200, 168, 48, 0.3);
+    }
+
+    /* ── MODAL ──────────────────────────────────── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal-box {
+      background: linear-gradient(145deg, #3a2812, #2a1a0c);
+      border: 3px solid var(--gold);
+      border-radius: 8px;
+      padding: 40px 50px;
+      text-align: center;
+      box-shadow: 0 0 60px rgba(200, 168, 48, 0.4);
+      max-width: 400px;
+      width: 90%;
+    }
+
+    .modal-box h2 {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 28px;
+      color: var(--gold);
+      margin-bottom: 10px;
+      text-shadow: 0 0 20px rgba(200, 168, 48, 0.5);
+    }
+
+    .modal-box p {
+      font-size: 16px;
+      color: var(--marble);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    .modal-box .winner-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+      display: block;
     }
 
     #overlay {
@@ -295,7 +567,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.82);
+      background: rgba(0, 0, 0, 0.75);
       justify-content: center;
       align-items: center;
       z-index: 100;
@@ -306,27 +578,82 @@
     }
 
     #overlay-content {
+      background: linear-gradient(145deg, #3a2812, #2a1a0c);
+      border: 3px solid var(--gold);
+      border-radius: 8px;
+      padding: 40px 50px;
       text-align: center;
-      padding: 44px 52px;
-      background: #22223a;
-      border-radius: 14px;
-      border: 1px solid #444;
-      max-width: 90vw;
+      box-shadow: 0 0 60px rgba(200, 168, 48, 0.4);
+      max-width: 400px;
+      width: 90%;
     }
 
     #overlay-content h2 {
-      font-size: 2em;
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 28px;
+      color: var(--gold);
       margin-bottom: 10px;
+      text-shadow: 0 0 20px rgba(200, 168, 48, 0.5);
     }
 
     #overlay-content p {
-      color: #999;
-      margin-bottom: 18px;
+      font-size: 16px;
+      color: var(--marble);
+      margin-bottom: 24px;
+      line-height: 1.6;
     }
 
-    #overlay-content button {
-      font-size: 1.05em;
-      padding: 10px 28px;
+    /* ── RULES PANEL ────────────────────────────── */
+    .rules-toggle {
+      position: relative;
+      z-index: 1;
+      margin-top: 14px;
+      width: 100%;
+      max-width: 620px;
+    }
+
+    .rules-toggle summary {
+      font-family: 'Cinzel', serif;
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--stone);
+      cursor: pointer;
+      padding: 8px 0;
+      list-style: none;
+      text-align: center;
+    }
+
+    .rules-toggle summary:hover {
+      color: var(--gold);
+    }
+
+    .rules-content {
+      background: rgba(42, 26, 14, 0.8);
+      border: 1px solid var(--bronze);
+      border-radius: 4px;
+      padding: 16px 20px;
+      margin-top: 6px;
+      font-size: 13px;
+      color: var(--marble2);
+      line-height: 1.7;
+      column-count: 2;
+      column-gap: 20px;
+    }
+
+    .rules-content h4 {
+      font-family: 'Cinzel', serif;
+      font-size: 11px;
+      color: var(--gold);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      margin-top: 10px;
+      column-span: all;
+    }
+
+    .rules-content h4:first-child {
+      margin-top: 0;
     }
 
     #rules-overlay {
@@ -336,7 +663,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.82);
+      background: rgba(0, 0, 0, 0.75);
       justify-content: center;
       align-items: center;
       z-index: 100;
@@ -347,9 +674,9 @@
     }
 
     #rules-content {
-      background: #22223a;
-      border-radius: 14px;
-      border: 1px solid #444;
+      background: linear-gradient(145deg, #3a2812, #2a1a0c);
+      border: 3px solid var(--gold);
+      border-radius: 8px;
       padding: 32px;
       max-width: 560px;
       max-height: 80vh;
@@ -360,18 +687,20 @@
 
     #rules-content h2 {
       margin-bottom: 14px;
-      color: #ddd;
+      font-family: 'Cinzel Decorative', serif;
+      color: var(--gold);
     }
 
     #rules-content h3 {
       margin-top: 14px;
       margin-bottom: 6px;
-      color: #bbb;
+      font-family: 'Cinzel', serif;
+      color: var(--gold2);
     }
 
     #rules-content p {
       margin-bottom: 8px;
-      color: #999;
+      color: var(--marble2);
     }
 
     #rules-content .legend {
@@ -395,23 +724,23 @@
     }
 
     #rules-content .legend-dot.bd {
-      background: #3a7fd5;
-      border: 2px solid #7ecaff;
+      background: radial-gradient(circle at 35% 35%, #5a8acc, var(--blue-mid), var(--blue-lapis));
+      border: 2px solid var(--blue-light);
     }
 
     #rules-content .legend-dot.rd {
-      background: #d53a3a;
-      border: 2px solid #ff7e7e;
+      background: radial-gradient(circle at 35% 35%, #e06050, var(--red-mid), var(--red-deep));
+      border: 2px solid var(--red-light);
     }
 
     #rules-content .legend-dot.bc {
-      background: #3a7fd5;
-      border: 2px solid #ffd700;
+      background: radial-gradient(circle at 35% 35%, #6a9adc, #1a5aaa, #0a2a5a);
+      border: 3px solid var(--gold);
     }
 
     #rules-content .legend-dot.rc {
-      background: #d53a3a;
-      border: 2px solid #ffd700;
+      background: radial-gradient(circle at 35% 35%, #f07060, #b02010, #6a0a08);
+      border: 3px solid var(--gold);
     }
 
     #rules-content button {
@@ -422,57 +751,75 @@
 
 <body>
   <div id="app">
-    <h1>Polis</h1>
-    <div id="turn-indicator" class="blue">Blue's Turn</div>
-    <div id="info-bar">
-      <div class="score blue">Blue: <span id="blue-count">15</span> dogs</div>
-      <div class="score red">Red: <span id="red-count">15</span> dogs</div>
+    <div class="header">
+      <h1>POLIS</h1>
+      <span class="ornament">❧ ⚜ ❧</span>
+      <p class="subtitle">The Ancient Game of Strategy &amp; Maneuver</p>
     </div>
-    <div id="board-wrapper">
-      <div id="board"></div>
-    </div>
-    <div id="status"></div>
-    <div id="buttons">
-      <button onclick="initGame()">New Game</button>
-      <button onclick="showRules()">Rules</button>
-    </div>
-  </div>
 
-  <div id="overlay">
-    <div id="overlay-content">
-      <h2 id="winner-text"></h2>
-      <p id="win-reason"></p>
-      <button onclick="hideOverlay(); initGame();">Play Again</button>
-    </div>
-  </div>
-
-  <div id="rules-overlay" onclick="this.classList.remove('show')">
-    <div id="rules-content" onclick="event.stopPropagation()">
-      <h2>How to Play Polis</h2>
-      <div class="legend">
-        <div class="legend-item"><span class="legend-dot bd"></span> Blue Dog</div>
-        <div class="legend-item"><span class="legend-dot rd"></span> Red Dog</div>
-        <div class="legend-item"><span class="legend-dot bc"></span> Blue Chariot</div>
-        <div class="legend-item"><span class="legend-dot rc"></span> Red Chariot</div>
+    <div class="players" id="players">
+      <div class="player-card blue" id="card-blue">
+        <div class="p-name">⚔ Blue — Achaea</div>
+        <div class="p-count" id="blue-count">16</div>
+        <div class="p-label">pieces remaining</div>
       </div>
-      <h3>Goal</h3>
-      <p>Move your chariot to the far rank (opposite side of the board) to win.</p>
-      <h3>Movement</h3>
-      <p>On your turn, move one of your pieces one square in any direction (including diagonals) to an empty square.</p>
-      <h3>Hopping</h3>
-      <p>After a piece moves, all adjacent pieces "hop" to the opposite side of the moved piece. A piece won't hop if:
-        the target square is occupied or off the board; it's a stunned chariot; or it's an enemy piece anchored by
-        another enemy piece behind it along the same axis.</p>
-      <h3>Capturing</h3>
-      <p>After hops resolve, any dog surrounded on opposite sides along the same axis (horizontal, vertical, or
-        diagonal) by enemy pieces is captured and removed. Captures are simultaneous.</p>
-      <h3>Chariots</h3>
-      <p>Chariots cannot be captured. Instead, a surrounded chariot is <strong>stunned</strong>: it can't move, doesn't
-        hop, and doesn't count for captures.</p>
-      <h3>Illegal Moves</h3>
-      <p>You cannot move a piece to a square where it would be immediately captured or stunned. You may move a piece
-        even if it hops an ally into danger.</p>
-      <button onclick="document.getElementById('rules-overlay').classList.remove('show')">Close</button>
+      <div class="turn-arrow" id="turn-arrow">▶</div>
+      <div class="player-card red" id="card-red">
+        <div class="p-name">Persia — ⚔ Red</div>
+        <div class="p-count" id="red-count">16</div>
+        <div class="p-label">pieces remaining</div>
+      </div>
+    </div>
+
+    <div class="status-bar" id="status">Select a piece to move.</div>
+
+    <div class="board-wrap">
+      <div class="coord-labels-top" id="col-labels-top"></div>
+      <div class="coord-row">
+        <div id="board-with-coords" style="display:flex; align-items:stretch;">
+          <div id="row-labels-left" style="display:flex;flex-direction:column;"></div>
+          <div id="board"></div>
+          <div id="row-labels-right" style="display:flex;flex-direction:column;"></div>
+        </div>
+      </div>
+      <div class="coord-labels-bottom" id="col-labels-bottom"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn" onclick="initGame()">⟳ New Game</button>
+    </div>
+
+    <details class="rules-toggle">
+      <summary>▸ Quick Rules Reference ◂</summary>
+      <div class="rules-content">
+        <h4>Objective</h4>
+        Move your Chariot (⚜) to the opposite back rank to win.
+        <h4>Movement</h4>
+        Move one piece per turn, one square in any direction (including diagonals). You cannot skip your turn.
+        <h4>Hopping</h4>
+        After a piece moves, all adjacent pieces hop to the opposite side. Exceptions: (1) destination must be empty;
+        (2) a piece won't hop if an allied piece is "anchored" behind it along the hop axis; (3) stunned chariots don't
+        hop.
+        <h4>Capturing</h4>
+        After hops resolve, any piece surrounded by enemies on both sides along the same axis is removed. Hops happen
+        before captures — pieces may hop into or out of danger.
+        <h4>Chariots</h4>
+        Cannot be captured — if surrounded, they become Stunned (shown faded). Stunned chariots cannot move and do not
+        hop or count for captures. They unstun when no longer surrounded.
+        <h4>Illegal Moves</h4>
+        You cannot move a piece into a square where it would be immediately captured or stunned.
+      </div>
+    </details>
+  </div>
+
+  <!-- Win Modal -->
+  <div class="modal-overlay" id="winModal">
+    <div class="modal-box">
+      <span class="winner-icon" id="winIcon">⚜</span>
+      <h2 id="winTitle">Victory!</h2>
+      <p id="winText">Player wins!</p>
+      <button class="btn" onclick="initGame(); document.getElementById('winModal').classList.remove('show')">Play
+        Again</button>
     </div>
   </div>
 
@@ -515,9 +862,10 @@
       selectedCell = null;
       validMoves = [];
       gameOver = false;
-      statusMsg = 'Blue goes first. Click a piece to select it.';
+      statusMsg = 'Achaea (Blue) begins. Select a piece to move.';
       lastMove = null;
-      hideOverlay();
+      const modal = document.getElementById('winModal');
+      if (modal) modal.classList.remove('show');
       render();
     }
 
@@ -539,7 +887,7 @@
         const r2 = r - dr, c2 = c - dc;
         if (inBounds(r1, c1) && inBounds(r2, c2)) {
           const p1 = b[r1][c1], p2 = b[r2][c2];
-          if (p1 && p1.team === enemy && p2 && p2.team === enemy)
+          if (p1 && p1.team === enemy && p2 && p2.team === enemy && !p1.stunned && !p2.stunned)
             return true;
         }
       }
@@ -619,9 +967,6 @@
     function executeMove(b, fromR, fromC, toR, toC) {
       b[toR][toC] = b[fromR][fromC];
       b[fromR][fromC] = null;
-
-      // Recompute stun after move (moving may change surrounding)
-      updateStun(b);
 
       // Resolve hops
       resolveHops(b, toR, toC);
@@ -735,7 +1080,15 @@
             const el = document.createElement('div');
             el.className = `piece ${piece.team}-${piece.type}`;
             if (piece.stunned) el.classList.add('stunned');
-            if (piece.type === 'chariot') el.textContent = '\u2605';
+
+            const isOwn = piece.team === currentPlayer && !(piece.type === 'chariot' && piece.stunned);
+            if (isOwn && !gameOver) el.classList.add('clickable');
+
+            if (selectedCell && selectedCell[0] === r && selectedCell[1] === c) {
+              el.classList.add('selected-piece');
+            }
+
+            el.textContent = piece.type === 'chariot' ? '⚜' : '●';
             cell.appendChild(el);
           }
 
@@ -751,17 +1104,24 @@
         }
       }
 
-      const turnEl = document.getElementById('turn-indicator');
-      if (gameOver) {
-        turnEl.textContent = 'Game Over';
-        turnEl.className = 'over';
-      } else {
-        turnEl.textContent = cap(currentPlayer) + "'s Turn";
-        turnEl.className = currentPlayer;
+      // Update piece counts
+      let blueCount = 0, redCount = 0;
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const p = board[r][c];
+          if (p) {
+            if (p.team === 'blue') blueCount++;
+            else if (p.team === 'red') redCount++;
+          }
+        }
       }
+      document.getElementById('blue-count').textContent = blueCount;
+      document.getElementById('red-count').textContent = redCount;
 
-      document.getElementById('blue-count').textContent = countPieces(board, 'blue');
-      document.getElementById('red-count').textContent = countPieces(board, 'red');
+      // Update player cards
+      updateTurnCards();
+
+      // Update status
       document.getElementById('status').textContent = statusMsg;
     }
 
@@ -857,8 +1217,10 @@
         for (let sr = 0; sr < ROWS; sr++)
           for (let sc = 0; sc < COLS; sc++) {
             const sp = board[sr][sc];
-            if (sp && sp.type === 'chariot' && sp.stunned)
-              msgs.push(`${cap(sp.team)} chariot is stunned!`);
+            if (sp && sp.type === 'chariot' && sp.stunned) {
+              const teamName = sp.team === 'blue' ? 'Achaea' : 'Persia';
+              msgs.push(`${teamName} chariot is stunned!`);
+            }
           }
 
         statusMsg = msgs.join(' ');
@@ -883,11 +1245,12 @@
           gameOver = true;
           const w = currentPlayer === 'blue' ? 'red' : 'blue';
           render();
-          showWin(w, `${cap(currentPlayer)} has no valid moves!`);
+          showWin(w, `${currentPlayer === 'blue' ? 'Achaea' : 'Persia'} has no valid moves!`);
           return;
         }
 
-        if (!statusMsg) statusMsg = `${cap(currentPlayer)}'s turn.`;
+        const teamName = currentPlayer === 'blue' ? 'Achaea (Blue)' : 'Persia (Red)';
+        if (!statusMsg) statusMsg = `${teamName}'s turn.`;
         render();
         return;
       }
@@ -906,11 +1269,12 @@
         if (moves.length > 0) {
           selectedCell = [r, c];
           validMoves = moves;
-          statusMsg = `Selected ${piece.type}. Click a highlighted square to move.`;
+          const pName = piece.type === 'chariot' ? 'Chariot' : 'Dog';
+          statusMsg = `${pName} selected. ${moves.length} move${moves.length > 1 ? 's' : ''} available. Click a highlighted square.`;
         } else {
           selectedCell = [r, c];
           validMoves = [];
-          statusMsg = 'This piece has no valid moves.';
+          statusMsg = 'This piece has no valid moves. Try another.';
         }
         render();
         return;
@@ -919,27 +1283,66 @@
       // Clicking elsewhere: deselect
       selectedCell = null;
       validMoves = [];
-      statusMsg = '';
+      const teamName = currentPlayer === 'blue' ? 'Achaea (Blue)' : 'Persia (Red)';
+      statusMsg = `${teamName}'s turn. Select a piece to move.`;
       render();
     }
 
+    function updateTurnCards() {
+      const blueCard = document.getElementById('card-blue');
+      const redCard = document.getElementById('card-red');
+      const arrow = document.getElementById('turn-arrow');
+
+      if (gameOver) {
+        blueCard.classList.remove('active-turn');
+        redCard.classList.remove('active-turn');
+      } else {
+        blueCard.classList.toggle('active-turn', currentPlayer === 'blue');
+        redCard.classList.toggle('active-turn', currentPlayer === 'red');
+        arrow.style.transform = currentPlayer === 'red' ? 'scaleX(-1)' : 'scaleX(1)';
+      }
+    }
+
     function showWin(winner, reason) {
-      const h = document.getElementById('winner-text');
-      h.textContent = cap(winner) + ' Wins!';
-      h.style.color = winner === 'blue' ? '#5ea8f5' : '#f55e5e';
-      document.getElementById('win-reason').textContent = reason;
-      document.getElementById('overlay').classList.add('show');
+      const name = winner === 'blue' ? 'Achaea (Blue)' : 'Persia (Red)';
+      const icon = winner === 'blue' ? '🔵' : '🔴';
+      document.getElementById('winIcon').textContent = icon;
+      document.getElementById('winTitle').textContent = 'VICTORY!';
+      document.getElementById('winText').textContent = `${name} has driven their chariot across the board and claimed dominion over the polis!`;
+      document.getElementById('winModal').classList.add('show');
+      statusMsg = `⚜ ${name} wins! The chariot has reached the far rank.`;
     }
 
-    function hideOverlay() {
-      document.getElementById('overlay').classList.remove('show');
-    }
+    function buildCoords() {
+      const cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+      const cellW = 'clamp(44px,10vw,64px)';
 
-    function showRules() {
-      document.getElementById('rules-overlay').classList.add('show');
+      ['col-labels-top', 'col-labels-bottom'].forEach(id => {
+        const el = document.getElementById(id);
+        el.style.cssText = `display:flex; margin-left:22px;`;
+        cols.forEach(l => {
+          const d = document.createElement('div');
+          d.className = 'coord-label';
+          d.textContent = l;
+          el.appendChild(d);
+        });
+      });
+
+      ['row-labels-left', 'row-labels-right'].forEach((id, side) => {
+        const el = document.getElementById(id);
+        el.style.cssText = `display:flex;flex-direction:column;width:20px;`;
+        for (let r = 1; r <= 8; r++) {
+          const d = document.createElement('div');
+          d.className = 'coord-side';
+          d.style.cssText = `height:clamp(44px,10vw,64px);display:flex;align-items:center;justify-content:${side === 0 ? 'flex-end' : 'flex-start'};font-family:'Cinzel',serif;font-size:10px;color:var(--bronze2);padding:${side === 0 ? '0 4px 0 0' : '0 0 0 4px'}`;
+          d.textContent = r;
+          el.appendChild(d);
+        }
+      });
     }
 
     // --- Init ---
+    buildCoords();
     initGame();
   </script>
 </body>
