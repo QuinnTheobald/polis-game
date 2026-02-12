@@ -28,6 +28,9 @@
       --gold: #c8a830;
       --gold2: #e8c840;
       --shadow: rgba(26, 14, 6, 0.5);
+      --brass: #b87333;
+      --copper: #cd7f32;
+      --steel: #8a8a8a;
     }
 
     * {
@@ -60,6 +63,29 @@
       z-index: 0;
     }
 
+    /* Steampunk gears background */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" opacity="0.08"><g fill="%23c8a830"><circle cx="50" cy="50" r="35" fill="none" stroke="%23c8a830" stroke-width="4"/><circle cx="50" cy="50" r="25" fill="none" stroke="%23c8a830" stroke-width="2"/><circle cx="50" cy="50" r="6"/><rect x="47" y="15" width="6" height="15" rx="1"/><rect x="47" y="70" width="6" height="15" rx="1"/><rect x="15" y="47" width="15" height="6" rx="1"/><rect x="70" y="47" width="15" height="6" rx="1"/><rect x="29" y="24" width="6" height="15" rx="1" transform="rotate(45 50 50)"/><rect x="65" y="24" width="6" height="15" rx="1" transform="rotate(-45 50 50)"/><rect x="29" y="61" width="6" height="15" rx="1" transform="rotate(-45 50 50)"/><rect x="65" y="61" width="6" height="15" rx="1" transform="rotate(45 50 50)"/></g></svg>');
+      animation: gears-rotate 120s linear infinite;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.6;
+    }
+
+    @keyframes gears-rotate {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
     #app {
       position: relative;
       z-index: 1;
@@ -72,12 +98,107 @@
       max-width: 650px;
     }
 
+    /* Floating decorative gears */
+    #app::before,
+    #app::after {
+      position: absolute;
+      font-size: 120px;
+      opacity: 0.05;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    #app::before {
+      content: '⚙';
+      left: -80px;
+      top: 40%;
+      color: var(--brass);
+      animation: gear-float 40s linear infinite;
+    }
+
+    #app::after {
+      content: '⚙';
+      right: -80px;
+      top: 50%;
+      color: var(--copper);
+      animation: gear-float-reverse 35s linear infinite;
+    }
+
+    @keyframes gear-float {
+      0% {
+        transform: rotate(0deg) translateY(0);
+      }
+
+      50% {
+        transform: rotate(180deg) translateY(-20px);
+      }
+
+      100% {
+        transform: rotate(360deg) translateY(0);
+      }
+    }
+
+    @keyframes gear-float-reverse {
+      0% {
+        transform: rotate(360deg) translateY(0);
+      }
+
+      50% {
+        transform: rotate(180deg) translateY(20px);
+      }
+
+      100% {
+        transform: rotate(0deg) translateY(0);
+      }
+    }
+
     /* ── HEADER ─────────────────────────────────── */
     .header {
       position: relative;
       z-index: 1;
       text-align: center;
       margin-bottom: 20px;
+    }
+
+    .header::before,
+    .header::after {
+      content: '⚙';
+      position: absolute;
+      font-size: 48px;
+      color: var(--brass);
+      opacity: 0.4;
+      animation: gear-spin 20s linear infinite;
+    }
+
+    .header::before {
+      left: -60px;
+      top: 10px;
+    }
+
+    .header::after {
+      right: -60px;
+      top: 10px;
+      animation: gear-spin-reverse 15s linear infinite;
+    }
+
+    @keyframes gear-spin {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes gear-spin-reverse {
+      from {
+        transform: rotate(360deg);
+      }
+
+      to {
+        transform: rotate(0deg);
+      }
     }
 
     .header h1 {
@@ -104,6 +225,18 @@
       opacity: 0.6;
       display: block;
       margin: 6px 0;
+      position: relative;
+    }
+
+    /* Animate gears in ornament */
+    .header .ornament::before,
+    .header .ornament::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      width: 20px;
+      height: 20px;
+      display: inline-block;
     }
 
     /* ── PLAYER BANNERS ─────────────────────────── */
@@ -125,6 +258,26 @@
       position: relative;
       overflow: hidden;
       transition: all 0.3s;
+    }
+
+    .player-card::before {
+      content: '⚙';
+      position: absolute;
+      font-size: 80px;
+      right: -10px;
+      bottom: -20px;
+      opacity: 0.08;
+      animation: gear-spin-slow 30s linear infinite;
+    }
+
+    @keyframes gear-spin-slow {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     .player-card.blue {
@@ -191,7 +344,9 @@
     .status-bar {
       position: relative;
       z-index: 1;
-      background: rgba(42, 26, 14, 0.8);
+      background:
+        rgba(42, 26, 14, 0.8),
+        repeating-linear-gradient(90deg, transparent 0, transparent 10px, rgba(184, 115, 51, 0.03) 10px, rgba(184, 115, 51, 0.03) 11px);
       border: 1px solid var(--bronze);
       border-radius: 4px;
       padding: 8px 20px;
@@ -205,6 +360,28 @@
       max-width: 600px;
       width: 100%;
       transition: color 0.3s;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 0 rgba(184, 115, 51, 0.2);
+    }
+
+    .status-bar::before,
+    .status-bar::after {
+      content: '⚙';
+      position: absolute;
+      font-size: 20px;
+      color: var(--brass);
+      opacity: 0.15;
+      top: 50%;
+      transform: translateY(-50%);
+      animation: gear-spin-slow 25s linear infinite;
+    }
+
+    .status-bar::before {
+      left: 6px;
+    }
+
+    .status-bar::after {
+      right: 6px;
+      animation: gear-spin-reverse 25s linear infinite;
     }
 
     .status-bar.phase-select {
@@ -225,11 +402,63 @@
     .board-wrap {
       position: relative;
       z-index: 1;
-      background: linear-gradient(145deg, #3a2a1a, #2a1a0e);
+      background:
+        linear-gradient(145deg, #3a2a1a, #2a1a0e),
+        repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(184, 115, 51, 0.1) 2px, rgba(184, 115, 51, 0.1) 3px);
       border: 4px solid var(--bronze);
       border-radius: 6px;
-      box-shadow: 0 0 0 2px var(--gold), 0 8px 40px var(--shadow), inset 0 0 40px rgba(0, 0, 0, 0.4);
+      box-shadow:
+        0 0 0 2px var(--gold),
+        0 0 0 3px var(--brass),
+        0 8px 40px var(--shadow),
+        inset 0 0 40px rgba(0, 0, 0, 0.4),
+        inset 0 0 4px rgba(184, 115, 51, 0.3);
       padding: 12px;
+    }
+
+    /* Rivets on board corners */
+    .board-wrap::before,
+    .board-wrap::after {
+      content: '';
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, var(--copper), var(--brass), #6d5a3a);
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(255, 255, 255, 0.2);
+      z-index: 10;
+    }
+
+    .board-wrap::before {
+      top: 8px;
+      left: 8px;
+    }
+
+    .board-wrap::after {
+      top: 8px;
+      right: 8px;
+    }
+
+    /* Additional rivets for board */
+    #board::before,
+    #board::after {
+      content: '';
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, var(--copper), var(--brass), #6d5a3a);
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(255, 255, 255, 0.2);
+      z-index: 20;
+      bottom: -18px;
+    }
+
+    #board::before {
+      left: -24px;
+    }
+
+    #board::after {
+      right: -24px;
     }
 
     .coord-row {
@@ -303,6 +532,7 @@
       cursor: default;
       border: 1px solid rgba(122, 92, 46, 0.3);
       transition: background 0.15s;
+      box-shadow: inset 0 0 2px rgba(184, 115, 51, 0.1);
     }
 
     .cell.light {
@@ -419,31 +649,77 @@
     .piece.blue-dog {
       background: radial-gradient(circle at 35% 35%, #5a8acc, var(--blue-mid), var(--blue-lapis));
       border: 2px solid var(--blue-light);
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+      box-shadow:
+        0 3px 8px rgba(0, 0, 0, 0.5),
+        inset 0 1px 2px rgba(255, 255, 255, 0.2),
+        inset 0 -8px 8px rgba(184, 115, 51, 0.08);
       color: #a8d0f8;
     }
 
     .piece.blue-chariot {
-      background: radial-gradient(circle at 35% 35%, #6a9adc, #1a5aaa, #0a2a5a);
+      background:
+        radial-gradient(circle at 35% 35%, #6a9adc, #1a5aaa, #0a2a5a),
+        repeating-linear-gradient(45deg, transparent 0, transparent 2px, rgba(184, 115, 51, 0.1) 2px, rgba(184, 115, 51, 0.1) 4px);
       border: 3px solid var(--gold);
-      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6), 0 0 12px rgba(200, 168, 48, 0.3), inset 0 1px 3px rgba(255, 255, 255, 0.3);
+      box-shadow:
+        0 3px 12px rgba(0, 0, 0, 0.6),
+        0 0 12px rgba(200, 168, 48, 0.3),
+        0 0 8px rgba(184, 115, 51, 0.2),
+        inset 0 1px 3px rgba(255, 255, 255, 0.3),
+        inset 0 0 10px rgba(184, 115, 51, 0.15);
       color: var(--gold2);
       border-radius: 30% 30% 50% 50%;
+      position: relative;
+    }
+
+    .piece.blue-chariot::after {
+      content: '';
+      position: absolute;
+      width: 20%;
+      height: 20%;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--copper), transparent);
+      top: 15%;
+      left: 15%;
+      opacity: 0.3;
     }
 
     .piece.red-dog {
       background: radial-gradient(circle at 35% 35%, #e06050, var(--red-mid), var(--red-deep));
       border: 2px solid var(--red-light);
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+      box-shadow:
+        0 3px 8px rgba(0, 0, 0, 0.5),
+        inset 0 1px 2px rgba(255, 255, 255, 0.2),
+        inset 0 -8px 8px rgba(184, 115, 51, 0.08);
       color: #f8b0a8;
     }
 
     .piece.red-chariot {
-      background: radial-gradient(circle at 35% 35%, #f07060, #b02010, #6a0a08);
+      background:
+        radial-gradient(circle at 35% 35%, #f07060, #b02010, #6a0a08),
+        repeating-linear-gradient(45deg, transparent 0, transparent 2px, rgba(184, 115, 51, 0.1) 2px, rgba(184, 115, 51, 0.1) 4px);
       border: 3px solid var(--gold);
-      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6), 0 0 12px rgba(200, 168, 48, 0.3), inset 0 1px 3px rgba(255, 255, 255, 0.3);
+      box-shadow:
+        0 3px 12px rgba(0, 0, 0, 0.6),
+        0 0 12px rgba(200, 168, 48, 0.3),
+        0 0 8px rgba(184, 115, 51, 0.2),
+        inset 0 1px 3px rgba(255, 255, 255, 0.3),
+        inset 0 0 10px rgba(184, 115, 51, 0.15);
       color: var(--gold2);
       border-radius: 30% 30% 50% 50%;
+      position: relative;
+    }
+
+    .piece.red-chariot::after {
+      content: '';
+      position: absolute;
+      width: 20%;
+      height: 20%;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--copper), transparent);
+      top: 15%;
+      left: 15%;
+      opacity: 0.3;
     }
 
     .piece.stunned {
@@ -457,7 +733,10 @@
     }
 
     .piece.clickable:hover {
-      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6), 0 0 14px var(--gold2);
+      box-shadow:
+        0 3px 12px rgba(0, 0, 0, 0.6),
+        0 0 14px var(--gold2),
+        0 0 8px var(--brass);
       transform: scale(1.12);
     }
 
@@ -477,19 +756,46 @@
       letter-spacing: 0.1em;
       padding: 9px 22px;
       border: 2px solid var(--bronze2);
-      background: linear-gradient(135deg, rgba(122, 92, 46, 0.6), rgba(90, 64, 24, 0.8));
+      background:
+        linear-gradient(135deg, rgba(122, 92, 46, 0.6), rgba(90, 64, 24, 0.8)),
+        repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(184, 115, 51, 0.05) 2px, rgba(184, 115, 51, 0.05) 4px);
       color: var(--marble);
       border-radius: 3px;
       cursor: pointer;
       transition: all 0.2s;
       text-transform: uppercase;
+      position: relative;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .btn::before,
+    .btn::after {
+      content: '';
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, var(--copper), var(--brass));
+      box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.4);
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .btn::before {
+      left: 6px;
+    }
+
+    .btn::after {
+      right: 6px;
     }
 
     .btn:hover {
       border-color: var(--gold);
       color: var(--gold2);
-      background: linear-gradient(135deg, rgba(122, 92, 46, 0.8), rgba(90, 64, 24, 1));
-      box-shadow: 0 0 12px rgba(200, 168, 48, 0.3);
+      background:
+        linear-gradient(135deg, rgba(122, 92, 46, 0.8), rgba(90, 64, 24, 1)),
+        repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(184, 115, 51, 0.08) 2px, rgba(184, 115, 51, 0.08) 4px);
+      box-shadow: 0 0 12px rgba(200, 168, 48, 0.3), 0 2px 6px rgba(0, 0, 0, 0.4);
     }
 
     button {
@@ -498,19 +804,46 @@
       letter-spacing: 0.1em;
       padding: 9px 22px;
       border: 2px solid var(--bronze2);
-      background: linear-gradient(135deg, rgba(122, 92, 46, 0.6), rgba(90, 64, 24, 0.8));
+      background:
+        linear-gradient(135deg, rgba(122, 92, 46, 0.6), rgba(90, 64, 24, 0.8)),
+        repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(184, 115, 51, 0.05) 2px, rgba(184, 115, 51, 0.05) 4px);
       color: var(--marble);
       border-radius: 3px;
       cursor: pointer;
       transition: all 0.2s;
       text-transform: uppercase;
+      position: relative;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    button::before,
+    button::after {
+      content: '';
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, var(--copper), var(--brass));
+      box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.4);
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    button::before {
+      left: 6px;
+    }
+
+    button::after {
+      right: 6px;
     }
 
     button:hover {
       border-color: var(--gold);
       color: var(--gold2);
-      background: linear-gradient(135deg, rgba(122, 92, 46, 0.8), rgba(90, 64, 24, 1));
-      box-shadow: 0 0 12px rgba(200, 168, 48, 0.3);
+      background:
+        linear-gradient(135deg, rgba(122, 92, 46, 0.8), rgba(90, 64, 24, 1)),
+        repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(184, 115, 51, 0.08) 2px, rgba(184, 115, 51, 0.08) 4px);
+      box-shadow: 0 0 12px rgba(200, 168, 48, 0.3), 0 2px 6px rgba(0, 0, 0, 0.4);
     }
 
     /* ── MODAL ──────────────────────────────────── */
@@ -529,14 +862,41 @@
     }
 
     .modal-box {
-      background: linear-gradient(145deg, #3a2812, #2a1a0c);
+      background:
+        linear-gradient(145deg, #3a2812, #2a1a0c),
+        repeating-linear-gradient(45deg, transparent 0, transparent 3px, rgba(184, 115, 51, 0.03) 3px, rgba(184, 115, 51, 0.03) 6px);
       border: 3px solid var(--gold);
       border-radius: 8px;
       padding: 40px 50px;
       text-align: center;
-      box-shadow: 0 0 60px rgba(200, 168, 48, 0.4);
+      box-shadow:
+        0 0 60px rgba(200, 168, 48, 0.4),
+        0 0 30px rgba(184, 115, 51, 0.2),
+        inset 0 2px 8px rgba(0, 0, 0, 0.3);
       max-width: 400px;
       width: 90%;
+      position: relative;
+    }
+
+    .modal-box::before,
+    .modal-box::after {
+      content: '⚙';
+      position: absolute;
+      font-size: 60px;
+      color: var(--brass);
+      opacity: 0.08;
+      animation: gear-spin-slow 30s linear infinite;
+    }
+
+    .modal-box::before {
+      top: 10px;
+      left: 10px;
+    }
+
+    .modal-box::after {
+      bottom: 10px;
+      right: 10px;
+      animation: gear-spin-reverse 30s linear infinite;
     }
 
     .modal-box h2 {
@@ -578,14 +938,20 @@
     }
 
     #overlay-content {
-      background: linear-gradient(145deg, #3a2812, #2a1a0c);
+      background:
+        linear-gradient(145deg, #3a2812, #2a1a0c),
+        repeating-linear-gradient(45deg, transparent 0, transparent 3px, rgba(184, 115, 51, 0.03) 3px, rgba(184, 115, 51, 0.03) 6px);
       border: 3px solid var(--gold);
       border-radius: 8px;
       padding: 40px 50px;
       text-align: center;
-      box-shadow: 0 0 60px rgba(200, 168, 48, 0.4);
+      box-shadow:
+        0 0 60px rgba(200, 168, 48, 0.4),
+        0 0 30px rgba(184, 115, 51, 0.2),
+        inset 0 2px 8px rgba(0, 0, 0, 0.3);
       max-width: 400px;
       width: 90%;
+      position: relative;
     }
 
     #overlay-content h2 {
@@ -674,7 +1040,9 @@
     }
 
     #rules-content {
-      background: linear-gradient(145deg, #3a2812, #2a1a0c);
+      background:
+        linear-gradient(145deg, #3a2812, #2a1a0c),
+        repeating-linear-gradient(45deg, transparent 0, transparent 3px, rgba(184, 115, 51, 0.03) 3px, rgba(184, 115, 51, 0.03) 6px);
       border: 3px solid var(--gold);
       border-radius: 8px;
       padding: 32px;
@@ -683,6 +1051,23 @@
       overflow-y: auto;
       line-height: 1.6;
       font-size: 0.92em;
+      box-shadow:
+        0 0 40px rgba(200, 168, 48, 0.3),
+        0 0 20px rgba(184, 115, 51, 0.2),
+        inset 0 2px 8px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    #rules-content::before {
+      content: '⚙';
+      position: absolute;
+      font-size: 100px;
+      color: var(--brass);
+      opacity: 0.04;
+      right: 20px;
+      bottom: 20px;
+      animation: gear-spin-slow 35s linear infinite;
+      pointer-events: none;
     }
 
     #rules-content h2 {
@@ -937,7 +1322,6 @@
       const sim = cloneBoard(board);
       sim[toR][toC] = sim[fromR][fromC];
       sim[fromR][fromC] = null;
-      updateStun(sim);
       return computeHops(sim, toR, toC);
     }
 
