@@ -968,6 +968,131 @@
     .rules-content h4:first-child {
       margin-top: 0;
     }
+
+    /* ── SETUP MODAL ─────────────────────────── */
+    .setup-row {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin: 20px 0 16px;
+    }
+
+    .setup-player {
+      flex: 1;
+      padding: 14px 12px;
+      border-radius: 4px;
+      border: 2px solid;
+      text-align: center;
+    }
+
+    .setup-player.blue {
+      background: linear-gradient(135deg, rgba(26, 58, 106, 0.9) 0%, rgba(42, 90, 154, 0.8) 100%);
+      border-color: var(--blue-light);
+    }
+
+    .setup-player.red {
+      background: linear-gradient(135deg, rgba(122, 26, 16, 0.9) 0%, rgba(184, 48, 32, 0.8) 100%);
+      border-color: var(--red-light);
+    }
+
+    .setup-player-label {
+      font-family: 'Cinzel', serif;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .setup-player.blue .setup-player-label {
+      color: var(--blue-light);
+    }
+
+    .setup-player.red .setup-player-label {
+      color: var(--red-light);
+    }
+
+    .setup-toggle {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+    }
+
+    .setup-toggle button {
+      font-size: 11px;
+      padding: 6px 14px;
+      border-color: var(--bronze);
+      color: var(--stone);
+    }
+
+    .setup-toggle button::before,
+    .setup-toggle button::after {
+      display: none;
+    }
+
+    .setup-toggle.blue button.active {
+      border-color: var(--blue-light);
+      color: var(--marble);
+      box-shadow: 0 0 10px rgba(74, 138, 204, 0.5);
+    }
+
+    .setup-toggle.red button.active {
+      border-color: var(--red-light);
+      color: var(--marble);
+      box-shadow: 0 0 10px rgba(224, 64, 48, 0.5);
+    }
+
+    .setup-depth {
+      margin: 16px 0 8px;
+      text-align: center;
+    }
+
+    .setup-depth label {
+      display: block;
+      font-family: 'Cinzel', serif;
+      font-size: 12px;
+      color: var(--stone);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .setup-depth select {
+      font-family: 'Cinzel', serif;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      padding: 7px 24px;
+      border: 2px solid var(--bronze2);
+      background: linear-gradient(135deg, rgba(42, 26, 14, 0.9), rgba(26, 14, 6, 0.95));
+      color: var(--marble);
+      border-radius: 3px;
+      cursor: pointer;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+      text-align: center;
+    }
+
+    .setup-depth select:hover,
+    .setup-depth select:focus {
+      border-color: var(--gold);
+      color: var(--gold2);
+      box-shadow: 0 0 10px rgba(200, 168, 48, 0.3);
+    }
+
+    #depth-warning {
+      font-style: italic;
+      font-size: 12px;
+      color: var(--terracotta2);
+      margin-top: 6px;
+      display: none;
+    }
+
+    #setup-start-btn {
+      margin-top: 20px;
+      font-size: 14px;
+      padding: 10px 32px;
+    }
   </style>
 </head>
 
@@ -1008,7 +1133,7 @@
     </div>
 
     <div class="btn-row">
-      <button class="btn" onclick="initGame()">⟳ New Game</button>
+      <button class="btn" onclick="showSetupModal()">⟳ New Game</button>
     </div>
 
     <details class="rules-toggle">
@@ -1034,13 +1159,49 @@
     </details>
   </div>
 
+  <!-- Setup Modal -->
+  <div class="modal-overlay" id="setupModal">
+    <div class="modal-box" style="max-width:480px;">
+      <h2>NEW GAME</h2>
+      <p style="margin-bottom:0; font-size:13px; color:var(--stone); letter-spacing:0.1em; text-transform:uppercase;">
+        Configure Players</p>
+      <div class="setup-row">
+        <div class="setup-player blue">
+          <div class="setup-player-label">⚔ Blue — Achaea</div>
+          <div class="setup-toggle blue">
+            <button data-value="human" class="active" onclick="setPlayerType('blue','human')">Human</button>
+            <button data-value="ai" onclick="setPlayerType('blue','ai')">AI</button>
+          </div>
+        </div>
+        <div class="setup-player red">
+          <div class="setup-player-label">Persia — ⚔ Red</div>
+          <div class="setup-toggle red">
+            <button data-value="human" onclick="setPlayerType('red','human')">Human</button>
+            <button data-value="ai" class="active" onclick="setPlayerType('red','ai')">AI</button>
+          </div>
+        </div>
+      </div>
+      <div class="setup-depth">
+        <label for="setup-depth">AI Depth</label>
+        <select id="setup-depth" onchange="onDepthChange(this.value)">
+          <option value="1" selected>1 – Hoplite</option>
+          <option value="2">2 – Strategist</option>
+          <option value="3">3 – Oracle</option>
+          <option value="4">4 – Athena</option>
+        </select>
+        <div id="depth-warning">Depth 4 may be slow to respond.</div>
+      </div>
+      <button id="setup-start-btn" onclick="startGame()">▶ Start Game</button>
+    </div>
+  </div>
+
   <!-- Win Modal -->
   <div class="modal-overlay" id="winModal">
     <div class="modal-box">
       <span class="winner-icon" id="winIcon">⚜</span>
       <h2 id="winTitle">Victory!</h2>
       <p id="winText">Player wins!</p>
-      <button class="btn" onclick="initGame(); document.getElementById('winModal').classList.remove('show')">Play
+      <button class="btn" onclick="document.getElementById('winModal').classList.remove('show'); showSetupModal()">Play
         Again</button>
     </div>
   </div>
@@ -1493,7 +1654,7 @@
       if (player === 'blue') { return chooseMoveBlue(boardState, player) }
     }
 
-    const DEPTH = 1;
+    let depth = 1;
     function minimax(board, depth, alpha, beta, isMaximizing, player, enemy) {
       const winner = checkWin(board);
       if (winner === player) return Infinity;
@@ -1551,7 +1712,8 @@
           const p = board[r][c];
           if (p && p.team === team && p.type === 'chariot') {
             const advancement = team === 'blue' ? r : (ROWS - 1 - r);
-            return (1 / 10) * advancement * advancement; // 0 at start, 49/10 at far rank
+            if (r === ROWS - 1) { return 100 }
+            return (1 / 10) * advancement * advancement; // 0 at start, 4.9 at far rank
           }
         }
       return 0; // chariot not found (shouldn't happen mid-game)
@@ -1569,7 +1731,7 @@
           for (const [toR, toC] of getValidMoves(boardState, r, c)) {
             const sim = cloneBoard(boardState);
             executeMoveSync(sim, r, c, toR, toC);
-            const score = minimax(sim, DEPTH - 1, -Infinity, Infinity, false, player, enemy);
+            const score = minimax(sim, depth - 1, -Infinity, Infinity, false, player, enemy);
             if (score > bestScore) {
               bestScore = score;
               bestMoves = [{ fromR: r, fromC: c, toR, toC }];
@@ -1595,7 +1757,7 @@
           for (const [toR, toC] of getValidMoves(boardState, r, c)) {
             const sim = cloneBoard(boardState);
             executeMoveSync(sim, r, c, toR, toC);
-            const score = minimax(sim, DEPTH - 1, -Infinity, Infinity, false, player, enemy);
+            const score = minimax(sim, depth - 1, -Infinity, Infinity, false, player, enemy);
             if (score > bestScore) {
               bestScore = score;
               bestMoves = [{ fromR: r, fromC: c, toR, toC }];
@@ -1775,9 +1937,31 @@
       });
     }
 
+    function showSetupModal() {
+      document.getElementById('setupModal').classList.add('show');
+    }
+
+    function setPlayerType(team, value) {
+      document.querySelectorAll(`.setup-toggle.${team} button`).forEach(b => {
+        b.classList.toggle('active', b.dataset.value === value);
+      });
+    }
+
+    function onDepthChange(value) {
+      document.getElementById('depth-warning').style.display = value === '4' ? 'block' : 'none';
+    }
+
+    function startGame() {
+      aiPlayers.blue = document.querySelector('.setup-toggle.blue button.active').dataset.value === 'ai';
+      aiPlayers.red = document.querySelector('.setup-toggle.red button.active').dataset.value === 'ai';
+      depth = parseInt(document.getElementById('setup-depth').value, 10);
+      document.getElementById('setupModal').classList.remove('show');
+      initGame();
+    }
+
     // --- Init ---
     buildCoords();
-    initGame();
+    showSetupModal();
   </script>
 </body>
 

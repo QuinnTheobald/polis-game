@@ -11,9 +11,7 @@ Then <a href="https://quinntheobald.github.io/polis-game/" target="_blank">click
 The rules of polis were designed and tested by me, Quinn Theobald. The application code was written by me with the help of Claude Code. Special thanks to my dad for helping me playtest for hours using small chips on a chessboard. The game is inspired by the ancient Greek board game *polis*, of which no ruleset has survived.
 
 <h2> AI Players </h2>
-By default, player 2 (red) is a depth-1 AI. You can toggle <code>aiPlayers</code> to change this.<br>
-To build and deploy AI players in the game, do the following:<br>
-- Set the aiPlayers variable. <code> const aiPlayers = { blue: false, red: false }; </code><br>
+To build and deploy new AI players in the game, do the following:<br>
 - Edit the <code>chooseMove</code> functions for one or both teams with an updated algorithm. The default algorithm can be found in <code>aiplayer.md</code>.<br>
 
 

@@ -33,7 +33,7 @@ much more heavily than the first few, pushing the chariot urgently once it's clo
 ```js
 // --- Minimax AI ---
 
-const DEPTH = 2;
+let depth = 1;
 function minimax(board, depth, alpha, beta, isMaximizing, player, enemy) {
   const winner = checkWin(board);
   if (winner === player) return Infinity;
@@ -91,7 +91,8 @@ function chariotAdvancement(board, team) {
       const p = board[r][c];
       if (p && p.team === team && p.type === 'chariot') {
         const advancement = team === 'blue' ? r : (ROWS - 1 - r);
-        return (1 / 10) * advancement * advancement; // 0 at start, 49/10 at far rank
+        if (r === ROWS - 1) { return 100 }
+        return (1 / 10) * advancement * advancement; // 0 at start, 4.9 at far rank
       }
     }
   return 0; // chariot not found (shouldn't happen mid-game)
@@ -109,7 +110,7 @@ function chooseMoveRed(boardState, player) {
       for (const [toR, toC] of getValidMoves(boardState, r, c)) {
         const sim = cloneBoard(boardState);
         executeMoveSync(sim, r, c, toR, toC);
-        const score = minimax(sim, DEPTH - 1, -Infinity, Infinity, false, player, enemy);
+        const score = minimax(sim, depth - 1, -Infinity, Infinity, false, player, enemy);
         if (score > bestScore) {
           bestScore = score;
           bestMoves = [{ fromR: r, fromC: c, toR, toC }];
