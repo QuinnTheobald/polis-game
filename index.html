@@ -968,7 +968,6 @@
     .rules-content h4:first-child {
       margin-top: 0;
     }
-
   </style>
 </head>
 
@@ -1053,6 +1052,7 @@
 
     let board, currentPlayer, selectedCell, validMoves, gameOver, statusMsg, lastMove;
     let animationState = null; // Tracks current animation phase
+    const aiPlayers = { blue: false, red: false }; // set to true to hand a team to the algorithm
 
     function delay(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
@@ -1095,6 +1095,7 @@
       const modal = document.getElementById('winModal');
       if (modal) modal.classList.remove('show');
       render();
+      afterTurn();
     }
 
     function updateStun(b) {
@@ -1361,7 +1362,7 @@
             el.className = `piece ${piece.team}-${piece.type}`;
             if (piece.stunned) el.classList.add('stunned');
 
-            const isOwn = piece.team === currentPlayer && !(piece.type === 'chariot' && piece.stunned);
+            const isOwn = piece.team === currentPlayer && !(piece.type === 'chariot' && piece.stunned) && !aiPlayers[currentPlayer];
             if (isOwn && !gameOver) el.classList.add('clickable');
 
             if (selectedCell && selectedCell[0] === r && selectedCell[1] === c) {
@@ -1482,66 +1483,117 @@
 
     let isAnimating = false;
 
-    async function handleClick(r, c) {
+    // --- AI Player Code ---
+
+    // Replace this function with your algorithm.
+    // Receives a deep-cloned board and the team to move ('blue' or 'red').
+    // Must return { fromR, fromC, toR, toC }, or null if no moves exist.
+    function chooseMove(boardState, player) {
+      if (player === 'red') { return chooseMoveRed(boardState, player) }
+      if (player === 'blue') { return chooseMoveBlue(boardState, player) }
+    }
+
+    function chooseMoveRed(boardState, player) {
+      const moves = [];
+      for (let r = 0; r < ROWS; r++)
+        for (let c = 0; c < COLS; c++) {
+          const p = boardState[r][c];
+          if (p && p.team === player)
+            for (const [toR, toC] of getValidMoves(boardState, r, c))
+              moves.push({ fromR: r, fromC: c, toR, toC });
+        }
+      return moves.length ? moves[Math.floor(Math.random() * moves.length)] : null;
+    }
+
+    function chooseMoveBlue(boardState, player) {
+      const moves = [];
+      for (let r = 0; r < ROWS; r++)
+        for (let c = 0; c < COLS; c++) {
+          const p = boardState[r][c];
+          if (p && p.team === player)
+            for (const [toR, toC] of getValidMoves(boardState, r, c))
+              moves.push({ fromR: r, fromC: c, toR, toC });
+        }
+      return moves.length ? moves[Math.floor(Math.random() * moves.length)] : null;
+    }
+
+    // --- End AI Players ---
+
+    async function runAiTurn() {
       if (gameOver || isAnimating) return;
+      const move = chooseMove(cloneBoard(board), currentPlayer);
+      if (move) await applyMove(move.fromR, move.fromC, move.toR, move.toC);
+    }
+
+    function afterTurn() {
+      if (!gameOver && aiPlayers[currentPlayer])
+        setTimeout(runAiTurn, 400);
+    }
+
+    async function applyMove(fromR, fromC, toR, toC) {
+      isAnimating = true;
+      lastMove = { fromR, fromC, toR, toC };
+
+      const captured = await executeMove(board, fromR, fromC, toR, toC);
+
+      // Build status
+      const msgs = [];
+      if (captured.length > 0)
+        msgs.push(`${captured.length} piece${captured.length > 1 ? 's' : ''} captured!`);
+
+      for (let sr = 0; sr < ROWS; sr++)
+        for (let sc = 0; sc < COLS; sc++) {
+          const sp = board[sr][sc];
+          if (sp && sp.type === 'chariot' && sp.stunned) {
+            const teamName = sp.team === 'blue' ? 'Achaea' : 'Persia';
+            msgs.push(`${teamName} chariot is stunned!`);
+          }
+        }
+
+      statusMsg = msgs.join(' ');
+
+      // Check win
+      const winner = checkWin(board);
+      if (winner) {
+        gameOver = true;
+        selectedCell = null;
+        validMoves = [];
+        isAnimating = false;
+        render();
+        showWin(winner, 'Chariot reached the final rank!');
+        return;
+      }
+
+      // Switch turns
+      currentPlayer = currentPlayer === 'blue' ? 'red' : 'blue';
+      selectedCell = null;
+      validMoves = [];
+
+      if (!hasAnyMoves(board, currentPlayer)) {
+        gameOver = true;
+        const w = currentPlayer === 'blue' ? 'red' : 'blue';
+        isAnimating = false;
+        render();
+        showWin(w, `${currentPlayer === 'blue' ? 'Achaea' : 'Persia'} has no valid moves!`);
+        return;
+      }
+
+      const teamName = currentPlayer === 'blue' ? 'Achaea (Blue)' : 'Persia (Red)';
+      if (!statusMsg) statusMsg = `${teamName}'s turn.`;
+      isAnimating = false;
+      render();
+      afterTurn();
+    }
+
+    async function handleClick(r, c) {
+      if (gameOver || isAnimating || aiPlayers[currentPlayer]) return;
 
       // Clicking a valid move destination
       if (selectedCell && validMoves.some(([mr, mc]) => mr === r && mc === c)) {
-        isAnimating = true;
         const [fromR, fromC] = selectedCell;
-        const movedPiece = board[fromR][fromC];
-
-        lastMove = { fromR, fromC, toR: r, toC: c };
-
-        // Execute move with animations
-        const captured = await executeMove(board, fromR, fromC, r, c);
-
-        // Build status
-        const msgs = [];
-        if (captured.length > 0)
-          msgs.push(`${captured.length} piece${captured.length > 1 ? 's' : ''} captured!`);
-
-        for (let sr = 0; sr < ROWS; sr++)
-          for (let sc = 0; sc < COLS; sc++) {
-            const sp = board[sr][sc];
-            if (sp && sp.type === 'chariot' && sp.stunned) {
-              const teamName = sp.team === 'blue' ? 'Achaea' : 'Persia';
-              msgs.push(`${teamName} chariot is stunned!`);
-            }
-          }
-
-        statusMsg = msgs.join(' ');
-
-        // Check win
-        const winner = checkWin(board);
-        if (winner) {
-          gameOver = true;
-          selectedCell = null;
-          validMoves = [];
-          isAnimating = false;
-          render();
-          showWin(winner, 'Chariot reached the final rank!');
-          return;
-        }
-
-        // Switch turns
-        currentPlayer = currentPlayer === 'blue' ? 'red' : 'blue';
         selectedCell = null;
         validMoves = [];
-
-        if (!hasAnyMoves(board, currentPlayer)) {
-          gameOver = true;
-          const w = currentPlayer === 'blue' ? 'red' : 'blue';
-          isAnimating = false;
-          render();
-          showWin(w, `${currentPlayer === 'blue' ? 'Achaea' : 'Persia'} has no valid moves!`);
-          return;
-        }
-
-        const teamName = currentPlayer === 'blue' ? 'Achaea (Blue)' : 'Persia (Red)';
-        if (!statusMsg) statusMsg = `${teamName}'s turn.`;
-        isAnimating = false;
-        render();
+        await applyMove(fromR, fromC, r, c);
         return;
       }
 
