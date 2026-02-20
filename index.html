@@ -1496,14 +1496,12 @@
 
     // --- UI ---
 
-    function cap(s) { return s[0].toUpperCase() + s.slice(1); }
-
     function render() {
       const inHistory = viewIndex !== null;
-      const snap      = inHistory ? moveHistory[viewIndex] : null;
-      const displayBoard  = inHistory ? snap.board         : board;
+      const snap = inHistory ? moveHistory[viewIndex] : null;
+      const displayBoard = inHistory ? snap.board : board;
       const displayPlayer = inHistory ? snap.currentPlayer : currentPlayer;
-      const displayLast   = inHistory ? snap.lastMove      : lastMove;
+      const displayLast = inHistory ? snap.lastMove : lastMove;
 
       const container = document.getElementById('board');
       container.innerHTML = '';
@@ -1683,7 +1681,7 @@
       if (player === 'blue') { return chooseMoveBlue(boardState, player) }
     }
 
-    let depth = 1;
+    let AI_DEPTH = 1;
     function minimax(board, depth, alpha, beta, isMaximizing, player, enemy) {
       const winner = checkWin(board);
       if (winner === player) return Infinity;
@@ -1760,7 +1758,7 @@
           for (const [toR, toC] of getValidMoves(boardState, r, c)) {
             const sim = cloneBoard(boardState);
             executeMoveSync(sim, r, c, toR, toC);
-            const score = minimax(sim, depth - 1, -Infinity, Infinity, false, player, enemy);
+            const score = minimax(sim, AI_DEPTH - 1, -Infinity, Infinity, false, player, enemy);
             if (score > bestScore) {
               bestScore = score;
               bestMoves = [{ fromR: r, fromC: c, toR, toC }];
@@ -1786,7 +1784,7 @@
           for (const [toR, toC] of getValidMoves(boardState, r, c)) {
             const sim = cloneBoard(boardState);
             executeMoveSync(sim, r, c, toR, toC);
-            const score = minimax(sim, depth - 1, -Infinity, Infinity, false, player, enemy);
+            const score = minimax(sim, AI_DEPTH - 1, -Infinity, Infinity, false, player, enemy);
             if (score > bestScore) {
               bestScore = score;
               bestMoves = [{ fromR: r, fromC: c, toR, toC }];
@@ -1986,7 +1984,7 @@
     function startGame() {
       aiPlayers.blue = document.querySelector('.setup-toggle.blue button.active').dataset.value === 'ai';
       aiPlayers.red = document.querySelector('.setup-toggle.red button.active').dataset.value === 'ai';
-      depth = parseInt(document.getElementById('setup-depth').value, 10);
+      AI_DEPTH = parseInt(document.getElementById('setup-depth').value, 10);
       document.getElementById('setupModal').classList.remove('show');
       initGame();
     }

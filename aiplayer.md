@@ -33,7 +33,7 @@ much more heavily than the first few, pushing the chariot urgently once it's clo
 ```js
 // --- Minimax AI ---
 
-let depth = 1;
+let AI_DEPTH = 1;
 function minimax(board, depth, alpha, beta, isMaximizing, player, enemy) {
   const winner = checkWin(board);
   if (winner === player) return Infinity;
@@ -110,7 +110,7 @@ function chooseMoveRed(boardState, player) {
       for (const [toR, toC] of getValidMoves(boardState, r, c)) {
         const sim = cloneBoard(boardState);
         executeMoveSync(sim, r, c, toR, toC);
-        const score = minimax(sim, depth - 1, -Infinity, Infinity, false, player, enemy);
+        const score = minimax(sim, AI_DEPTH - 1, -Infinity, Infinity, false, player, enemy);
         if (score > bestScore) {
           bestScore = score;
           bestMoves = [{ fromR: r, fromC: c, toR, toC }];
