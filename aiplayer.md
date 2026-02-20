@@ -1,7 +1,7 @@
 # Polis AI — Minimax Algorithm
 
-Drop the functions below into `index.html` to replace the placeholder `chooseMoveRed`.
-Remember to set aiPlayers to true for the red team.
+Drop the functions below into `index.html` to replace the placeholder `chooseMoveRed`.<br>
+Set aiPlayers to true for the red team.
 
 ---
 
@@ -20,8 +20,8 @@ the result, keeping it fast enough for depth 3–4 in-browser.
 |---|---|
 | Each own piece on the board | +1 |
 | Each enemy piece on the board | −1 |
-| Own chariot advancement (rows toward far rank, squared, divided by 10) | +0 … +49/10 |
-| Enemy chariot advancement (rows toward far rank, squared, divided by 10) | −0 … −49/10 |
+| Own chariot advancement (rows toward far rank, squared, divided by 10) | +0 … +4.9 |
+| Enemy chariot advancement (rows toward far rank, squared, divided by 10) | −0 … −4.9 |
 
 Squaring the chariot advancement means the algorithm values the final few rows
 much more heavily than the first few, pushing the chariot urgently once it's close.
