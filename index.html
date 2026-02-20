@@ -398,6 +398,11 @@
       font-size: 16px;
     }
 
+    .status-bar.phase-history {
+      color: var(--bronze2);
+      font-style: italic;
+    }
+
     /* ── BOARD WRAPPER ──────────────────────────── */
     .board-wrap {
       position: relative;
@@ -1253,6 +1258,9 @@
       gameOver = false;
       statusMsg = 'Achaea (Blue) begins. Select a piece to move.';
       lastMove = null;
+      moveHistory.length = 0;
+      viewIndex = null;
+      saveSnapshot(0);
       const modal = document.getElementById('winModal');
       if (modal) modal.classList.remove('show');
       render();
@@ -1491,6 +1499,12 @@
     function cap(s) { return s[0].toUpperCase() + s.slice(1); }
 
     function render() {
+      const inHistory = viewIndex !== null;
+      const snap      = inHistory ? moveHistory[viewIndex] : null;
+      const displayBoard  = inHistory ? snap.board         : board;
+      const displayPlayer = inHistory ? snap.currentPlayer : currentPlayer;
+      const displayLast   = inHistory ? snap.lastMove      : lastMove;
+
       const container = document.getElementById('board');
       container.innerHTML = '';
 
@@ -1505,28 +1519,28 @@
           const isLight = (r + c) % 2 === 0;
           cell.className = 'cell ' + (isLight ? 'light' : 'dark');
 
-          if (selectedCell && selectedCell[0] === r && selectedCell[1] === c)
+          if (!inHistory && selectedCell && selectedCell[0] === r && selectedCell[1] === c)
             cell.classList.add('selected');
 
-          const isValidMove = validMoves.some(([mr, mc]) => mr === r && mc === c);
+          const isValidMove = !inHistory && validMoves.some(([mr, mc]) => mr === r && mc === c);
           if (isValidMove)
             cell.classList.add('valid-move');
 
-          if (lastMove) {
-            if (lastMove.fromR === r && lastMove.fromC === c) cell.classList.add('last-from');
-            if (lastMove.toR === r && lastMove.toC === c) cell.classList.add('last-to');
+          if (displayLast) {
+            if (displayLast.fromR === r && displayLast.fromC === c) cell.classList.add('last-from');
+            if (displayLast.toR === r && displayLast.toC === c) cell.classList.add('last-to');
           }
 
-          const piece = board[r][c];
+          const piece = displayBoard[r][c];
           if (piece) {
             const el = document.createElement('div');
             el.className = `piece ${piece.team}-${piece.type}`;
             if (piece.stunned) el.classList.add('stunned');
 
-            const isOwn = piece.team === currentPlayer && !(piece.type === 'chariot' && piece.stunned) && !aiPlayers[currentPlayer];
+            const isOwn = !inHistory && piece.team === displayPlayer && !(piece.type === 'chariot' && piece.stunned) && !aiPlayers[displayPlayer];
             if (isOwn && !gameOver) el.classList.add('clickable');
 
-            if (selectedCell && selectedCell[0] === r && selectedCell[1] === c) {
+            if (!inHistory && selectedCell && selectedCell[0] === r && selectedCell[1] === c) {
               el.classList.add('selected-piece');
             }
 
@@ -1548,7 +1562,7 @@
 
           cell.addEventListener('click', () => handleClick(r, c));
 
-          if (isValidMove && selectedCell) {
+          if (!inHistory && isValidMove && selectedCell) {
             const [fromR, fromC] = selectedCell;
             cell.addEventListener('mouseenter', () => drawHopPreview(fromR, fromC, r, c));
             cell.addEventListener('mouseleave', clearHopPreview);
@@ -1559,14 +1573,23 @@
       }
 
       // Update piece counts
-      document.getElementById('blue-count').textContent = countPieces(board, 'blue');
-      document.getElementById('red-count').textContent = countPieces(board, 'red');
+      document.getElementById('blue-count').textContent = countPieces(displayBoard, 'blue');
+      document.getElementById('red-count').textContent = countPieces(displayBoard, 'red');
 
       // Update player cards
-      updateTurnCards();
+      updateTurnCards(displayPlayer);
 
       // Update status
-      document.getElementById('status').textContent = statusMsg;
+      const statusEl = document.getElementById('status');
+      if (inHistory) {
+        const total = moveHistory.length - 1;
+        const label = snap.turnNum === 0 ? 'Start' : `Turn ${snap.turnNum}`;
+        statusEl.textContent = `${label} / ${total}  ·  ← → to navigate  ·  Esc to return`;
+        statusEl.className = 'status-bar phase-history';
+      } else {
+        statusEl.textContent = statusMsg;
+        statusEl.className = 'status-bar';
+      }
     }
 
     function cellCenter(r, c) {
@@ -1643,6 +1666,12 @@
     }
 
     let isAnimating = false;
+    const moveHistory = []; // Array of { board, currentPlayer, statusMsg, lastMove, turnNum }
+    let viewIndex = null;   // null = live; number = index into moveHistory being viewed
+
+    function saveSnapshot(turnNum) {
+      moveHistory.push({ board: cloneBoard(board), currentPlayer, statusMsg, lastMove, turnNum });
+    }
 
     // --- AI Player Code ---
 
@@ -1774,7 +1803,7 @@
     // --- End AI Players ---
 
     async function runAiTurn() {
-      if (gameOver || isAnimating) return;
+      if (gameOver || isAnimating || viewIndex !== null) return;
       const move = chooseMove(cloneBoard(board), currentPlayer);
       if (move) await applyMove(move.fromR, move.fromC, move.toR, move.toC);
     }
@@ -1812,6 +1841,7 @@
         gameOver = true;
         selectedCell = null;
         validMoves = [];
+        saveSnapshot(moveHistory.length);
         isAnimating = false;
         render();
         showWin(winner, 'Chariot reached the final rank!');
@@ -1826,6 +1856,7 @@
       if (!hasAnyMoves(board, currentPlayer)) {
         gameOver = true;
         const w = currentPlayer === 'blue' ? 'red' : 'blue';
+        saveSnapshot(moveHistory.length);
         isAnimating = false;
         render();
         showWin(w, `${currentPlayer === 'blue' ? 'Achaea' : 'Persia'} has no valid moves!`);
@@ -1834,13 +1865,14 @@
 
       const teamName = currentPlayer === 'blue' ? 'Achaea (Blue)' : 'Persia (Red)';
       if (!statusMsg) statusMsg = `${teamName}'s turn.`;
+      saveSnapshot(moveHistory.length);
       isAnimating = false;
       render();
       afterTurn();
     }
 
     async function handleClick(r, c) {
-      if (gameOver || isAnimating || aiPlayers[currentPlayer]) return;
+      if (gameOver || isAnimating || aiPlayers[currentPlayer] || viewIndex !== null) return;
 
       // Clicking a valid move destination
       if (selectedCell && validMoves.some(([mr, mc]) => mr === r && mc === c)) {
@@ -1884,7 +1916,7 @@
       render();
     }
 
-    function updateTurnCards() {
+    function updateTurnCards(player = currentPlayer) {
       const blueCard = document.getElementById('card-blue');
       const redCard = document.getElementById('card-red');
       const arrow = document.getElementById('turn-arrow');
@@ -1893,9 +1925,9 @@
         blueCard.classList.remove('active-turn');
         redCard.classList.remove('active-turn');
       } else {
-        blueCard.classList.toggle('active-turn', currentPlayer === 'blue');
-        redCard.classList.toggle('active-turn', currentPlayer === 'red');
-        arrow.style.transform = currentPlayer === 'red' ? 'scaleX(-1)' : 'scaleX(1)';
+        blueCard.classList.toggle('active-turn', player === 'blue');
+        redCard.classList.toggle('active-turn', player === 'red');
+        arrow.style.transform = player === 'red' ? 'scaleX(-1)' : 'scaleX(1)';
       }
     }
 
@@ -1958,6 +1990,33 @@
       document.getElementById('setupModal').classList.remove('show');
       initGame();
     }
+
+    // --- History Navigation ---
+    document.addEventListener('keydown', e => {
+      if (isAnimating) return;
+      if (e.key === 'ArrowLeft') {
+        if (viewIndex === null) {
+          if (moveHistory.length === 0) return;
+          viewIndex = moveHistory.length - 1;
+        } else if (viewIndex > 0) {
+          viewIndex--;
+        }
+        render();
+      } else if (e.key === 'ArrowRight') {
+        if (viewIndex === null) return;
+        if (viewIndex < moveHistory.length - 1) {
+          viewIndex++;
+        } else {
+          viewIndex = null;
+          afterTurn(); // resume AI if it was waiting
+        }
+        render();
+      } else if (e.key === 'Escape' && viewIndex !== null) {
+        viewIndex = null;
+        afterTurn();
+        render();
+      }
+    });
 
     // --- Init ---
     buildCoords();
