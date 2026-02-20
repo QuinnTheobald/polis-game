@@ -99,8 +99,8 @@ function chariotAdvancement(board, team) {
 
 function chooseMoveRed(boardState, player) {
   const enemy = player === 'blue' ? 'red' : 'blue';
-  let bestMove = null;
   let bestScore = -Infinity;
+  let bestMoves = [];
 
   for (let r = 0; r < ROWS; r++)
     for (let c = 0; c < COLS; c++) {
@@ -112,12 +112,15 @@ function chooseMoveRed(boardState, player) {
         const score = minimax(sim, DEPTH - 1, -Infinity, Infinity, false, player, enemy);
         if (score > bestScore) {
           bestScore = score;
-          bestMove = { fromR: r, fromC: c, toR, toC };
+          bestMoves = [{ fromR: r, fromC: c, toR, toC }];
+        } else if (score === bestScore) {
+          bestMoves.push({ fromR: r, fromC: c, toR, toC });
         }
       }
     }
 
-  return bestMove;
+  const randomIndex = Math.floor(Math.random() * bestMoves.length);
+  return bestMoves[randomIndex];
 }
 ```
 
