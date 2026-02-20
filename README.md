@@ -11,11 +11,15 @@ Then <a href="https://quinntheobald.github.io/polis-game/" target="_blank">click
 The rules of polis were designed and tested by me, Quinn Theobald. The application code was written by me with the help of Claude Code. Special thanks to my dad for helping me playtest for hours using small chips on a chessboard. The game is inspired by the ancient Greek board game *polis*, of which no ruleset has survived.
 
 <h2> AI Players </h2>
-To build and deploy AI players in the game, do the following:
-* Set the aiPlayers variable to turn on AI for one or both sides.
-<code> const aiPlayers = { blue: false, red: false }; </code>
-* Edit the <code> chooseMove </code> functions for one or both teams with an updated algorithm. The default algorithm selects random moves.
-* Useful functions when writing an algorithm to play Polis:
+To build and deploy AI players in the game, do the following:<br>
+- Set the aiPlayers variable to turn on AI for one or both sides.<br>
+<code> const aiPlayers = { blue: false, red: false }; </code><br>
+- Edit the <code> chooseMove </code> functions for one or both teams with an updated algorithm. The default algorithm selects random moves.<br>
+- <code>aiplayer.md</code> has an algorithm and instructions for setting up the AI player.<br>
+
+
+<h3>Useful functions when writing an algorithm to play Polis:</h3>
+
 
 **Enumerating moves**                                                     
   - getValidMoves(board, r, c) — returns all legal [toR, toC] destinations for  
