@@ -10,6 +10,7 @@
     rel="stylesheet">
   <style>
     :root {
+      --cell-size: clamp(30px, calc((100vw - 92px) / 8), 64px);
       --marble: #f0e8d8;
       --marble2: #e8dcc8;
       --stone: #c8b89a;
@@ -478,7 +479,7 @@
     }
 
     .coord-label {
-      width: clamp(44px, 10vw, 64px);
+      width: var(--cell-size);
       text-align: center;
       font-family: 'Cinzel', serif;
       font-size: 10px;
@@ -502,11 +503,10 @@
     /* ── BOARD GRID ─────────────────────────────── */
     #board {
       display: grid;
-      grid-template-columns: repeat(8, clamp(44px, 10vw, 64px));
-      grid-template-rows: repeat(8, clamp(44px, 10vw, 64px));
+      grid-template-columns: repeat(8, var(--cell-size));
+      grid-template-rows: repeat(8, var(--cell-size));
       border: 1px solid var(--bronze);
       position: relative;
-      --cell-size: clamp(44px, 10vw, 64px);
     }
 
     #hop-svg {
@@ -1274,7 +1274,7 @@
         <h2>Rules</h2>
         <button class="btn rules-modal-close" onclick="hideRulesModal()">✕ Close</button>
       </div>
-      <iframe class="rules-pdf-frame" src="polis_rules.pdf" title="Polis Rules"></iframe>
+      <iframe class="rules-pdf-frame" src="polis_rules_clean.html" title="Polis Rules"></iframe>
     </div>
   </div>
 
@@ -1466,7 +1466,7 @@
 
       if (hops.length > 0) {
         // Mark hopping pieces for animation
-        animationState = { hopping: hops.map(h => [h.fromR, h.fromC]) };
+        animationState = { hopping: new Set(hops.map(h => `${h.fromR},${h.fromC}`)) };
         render();
         await delay(500); // Duration of hop animation
 
@@ -1486,7 +1486,7 @@
 
       // Phase 4: Animate captures
       if (captured.length > 0) {
-        animationState = { capturing: captured };
+        animationState = { capturing: new Set(captured.map(([r, c]) => `${r},${c}`)) };
         render();
         await delay(300); // Duration of capture animation
 
@@ -1611,14 +1611,12 @@
 
             // Add hopping animation
             if (animationState && animationState.hopping) {
-              const isHopping = animationState.hopping.some(([hr, hc]) => hr === r && hc === c);
-              if (isHopping) el.classList.add('hopping');
+              if (animationState.hopping.has(`${r},${c}`)) el.classList.add('hopping');
             }
 
             // Add capture animation
             if (animationState && animationState.capturing) {
-              const isCapturing = animationState.capturing.some(([cr, cc]) => cr === r && cc === c);
-              if (isCapturing) el.classList.add('fade-out-capture');
+              if (animationState.capturing.has(`${r},${c}`)) el.classList.add('fade-out-capture');
             }
 
             el.textContent = piece.type === 'chariot' ? '⚜' : '●';
@@ -2008,7 +2006,7 @@
 
     function buildCoords() {
       const cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
-      const cellW = 'clamp(44px,10vw,64px)';
+      const cellW = 'var(--cell-size)';
 
       ['col-labels-top', 'col-labels-bottom'].forEach(id => {
         const el = document.getElementById(id);
@@ -2027,7 +2025,7 @@
         for (let r = 1; r <= 8; r++) {
           const d = document.createElement('div');
           d.className = 'coord-side';
-          d.style.cssText = `height:clamp(44px,10vw,64px);display:flex;align-items:center;justify-content:${side === 0 ? 'flex-end' : 'flex-start'};font-family:'Cinzel',serif;font-size:10px;color:var(--bronze2);padding:${side === 0 ? '0 4px 0 0' : '0 0 0 4px'}`;
+          d.style.cssText = `height:var(--cell-size);display:flex;align-items:center;justify-content:${side === 0 ? 'flex-end' : 'flex-start'};font-family:'Cinzel',serif;font-size:10px;color:var(--bronze2);padding:${side === 0 ? '0 4px 0 0' : '0 0 0 4px'}`;
           d.textContent = r;
           el.appendChild(d);
         }
