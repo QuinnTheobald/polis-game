@@ -1098,6 +1098,61 @@
       font-size: 14px;
       padding: 10px 32px;
     }
+
+    /* ── RULES PDF MODAL ─────────────────────── */
+    .rules-modal-box {
+      background:
+        linear-gradient(145deg, #3a2812, #2a1a0c),
+        repeating-linear-gradient(45deg, transparent 0, transparent 3px, rgba(184, 115, 51, 0.03) 3px, rgba(184, 115, 51, 0.03) 6px);
+      border: 3px solid var(--gold);
+      border-radius: 8px;
+      box-shadow:
+        0 0 60px rgba(200, 168, 48, 0.4),
+        0 0 30px rgba(184, 115, 51, 0.2),
+        inset 0 2px 8px rgba(0, 0, 0, 0.3);
+      width: 90vw;
+      max-width: 860px;
+      height: 88vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .rules-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px 12px;
+      border-bottom: 1px solid var(--bronze);
+      flex-shrink: 0;
+    }
+
+    .rules-modal-header h2 {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 18px;
+      color: var(--gold);
+      text-shadow: 0 0 16px rgba(200, 168, 48, 0.4);
+      letter-spacing: 0.1em;
+    }
+
+    .rules-modal-close {
+      font-family: 'Cinzel', serif;
+      font-size: 11px;
+      padding: 6px 16px;
+    }
+
+    .rules-modal-close::before,
+    .rules-modal-close::after {
+      display: none;
+    }
+
+    .rules-pdf-frame {
+      flex: 1;
+      width: 100%;
+      border: none;
+      border-radius: 0 0 6px 6px;
+      background: #fff;
+    }
   </style>
 </head>
 
@@ -1139,6 +1194,7 @@
 
     <div class="btn-row">
       <button class="btn" onclick="showSetupModal()">⟳ New Game</button>
+      <button class="btn" onclick="showRulesModal()">📜 Rules</button>
     </div>
 
     <details class="rules-toggle">
@@ -1208,6 +1264,17 @@
       <p id="winText">Player wins!</p>
       <button class="btn" onclick="document.getElementById('winModal').classList.remove('show'); showSetupModal()">Play
         Again</button>
+    </div>
+  </div>
+
+  <!-- Rules PDF Modal -->
+  <div class="modal-overlay" id="rulesModal" onclick="handleRulesOverlayClick(event)">
+    <div class="rules-modal-box">
+      <div class="rules-modal-header">
+        <h2>Rules</h2>
+        <button class="btn rules-modal-close" onclick="hideRulesModal()">✕ Close</button>
+      </div>
+      <iframe class="rules-pdf-frame" src="polis_rules.pdf" title="Polis Rules"></iframe>
     </div>
   </div>
 
@@ -2009,12 +2076,29 @@
           afterTurn(); // resume AI if it was waiting
         }
         render();
-      } else if (e.key === 'Escape' && viewIndex !== null) {
-        viewIndex = null;
-        afterTurn();
-        render();
+      } else if (e.key === 'Escape') {
+        if (document.getElementById('rulesModal').classList.contains('show')) {
+          hideRulesModal();
+        } else if (viewIndex !== null) {
+          viewIndex = null;
+          afterTurn();
+          render();
+        }
       }
     });
+
+    // --- Rules Modal ---
+    function showRulesModal() {
+      document.getElementById('rulesModal').classList.add('show');
+    }
+
+    function hideRulesModal() {
+      document.getElementById('rulesModal').classList.remove('show');
+    }
+
+    function handleRulesOverlayClick(e) {
+      if (e.target === document.getElementById('rulesModal')) hideRulesModal();
+    }
 
     // --- Init ---
     buildCoords();
