@@ -1402,7 +1402,6 @@
       const sim = cloneBoard(board);
       sim[toR][toC] = sim[fromR][fromC];
       sim[fromR][fromC] = null;
-      updateStun(sim);
       return computeHops(sim, toR, toC);
     }
 
@@ -1434,9 +1433,6 @@
       b[toR][toC] = b[fromR][fromC];
       b[fromR][fromC] = null;
 
-      // Compute stun before hops
-      updateStun(b);
-
       // Resolve hops
       resolveHops(b, toR, toC);
 
@@ -1457,7 +1453,6 @@
       // Phase 1: Move the main piece
       b[toR][toC] = b[fromR][fromC];
       b[fromR][fromC] = null;
-      updateStun(b);
       render();
       await delay(250);
 
